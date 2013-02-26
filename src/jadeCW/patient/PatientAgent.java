@@ -6,6 +6,7 @@ import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.SearchConstraints;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jadeCW.InvalidAgentInputException;
+import jadeCW.patient.patientBehaviour.RequestAppointment;
 import jadeCW.utils.GlobalAgentConstants;
 
 public class PatientAgent extends Agent {
@@ -14,12 +15,20 @@ public class PatientAgent extends Agent {
 
     private PatientPreference patientPreference;
     private DFPatientSubscription dfSubscription;
+    private RequestAppointment requestAppointmentBehaviour;
 
     protected void setup() {
         System.out.println("Initialization of patient agent: " + getLocalName());
 
         initializeArguments();
         subscribeToDFAgents();
+        addPatientBehaviour();
+    }
+
+    private void addPatientBehaviour() {
+
+        requestAppointmentBehaviour = new RequestAppointment();
+        addBehaviour(requestAppointmentBehaviour);
 
     }
 
