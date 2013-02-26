@@ -1,18 +1,22 @@
 package jadeCW.patient.patientBehaviour;
 
-import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
-import jadeCW.hospital.HospitalAgent;
+import jade.lang.acl.ACLMessage;
+import jade.lang.acl.MessageTemplate;
 import jadeCW.patient.DFPatientSubscription;
+import jadeCW.patient.PatientAgent;
+import jadeCW.utils.GlobalAgentConstants;
 
 public class RequestAppointment extends Behaviour {
 
-    private boolean done = false;
+    private boolean isAllocated = false;
     private DFPatientSubscription dfSubscription;
+    private PatientAgent patientAgent;
 
-    public RequestAppointment(DFPatientSubscription dfSubscription) {
+    public RequestAppointment(DFPatientSubscription dfSubscription, PatientAgent patientAgent) {
         this.dfSubscription = dfSubscription;
+        this.patientAgent = patientAgent;
     }
 
     @Override
@@ -23,15 +27,42 @@ public class RequestAppointment extends Behaviour {
         if(appointmentAgentDescription != null) {
             // appointment-service agent can allocate appointment
 
-            // request appointment
+            //Check that this agent (i.e. the parent agent of this behaviour) has not already been allocated an appointment
+            if (!isAllocated) {
 
-            //
+                requestAppointment(appointmentAgentDescription);
+                receiveResponse();
+
+            }
+        }
+
+    }
+
+    private void requestAppointment(DFAgentDescription appointmentAgentDescription) {
+
+        ACLMessage appointmentRequestMessage = new ACLMessage(ACLMessage.REQUEST);
+        appointmentRequestMessage.addReceiver(appointmentAgentDescription.getName());
+
+        patientAgent.send(appointmentRequestMessage);
+
+    }
+
+    private void receiveResponse() {
+
+        ACLMessage msg = null;
+        while(msg == null) msg = patientAgent.receive( MessageTemplate.MatchPerformative(ACLMessage.INFORM));
+
+        int currentAllocation = Integer.parseInt(msg.getContent());
+
+        if(currentAllocation == GlobalAgentConstants.APPOINTMENT_UNINITIALIZED) {
+            patientAgent.setCurrentAllocation(currentAllocation);
+            isAllocated = true;
         }
 
     }
 
     @Override
     public boolean done() {
-        return done;
+        return isAllocated;
     }
 }

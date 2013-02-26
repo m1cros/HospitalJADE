@@ -11,11 +11,18 @@ import jadeCW.utils.GlobalAgentConstants;
 
 public class PatientAgent extends Agent {
 
-    private static long MAX_AGENT_QUEUE = 10;
-
     private PatientPreference patientPreference;
     private DFPatientSubscription dfSubscription;
     private RequestAppointment requestAppointmentBehaviour;
+    private int currentAllocation = GlobalAgentConstants.APPOINTMENT_UNINITIALIZED;
+
+    public int getCurrentAllocation() {
+        return currentAllocation;
+    }
+
+    public void setCurrentAllocation(int currentAllocation) {
+        this.currentAllocation = currentAllocation;
+    }
 
     protected void setup() {
         System.out.println("Initialization of patient agent: " + getLocalName());
@@ -27,7 +34,7 @@ public class PatientAgent extends Agent {
 
     private void addPatientBehaviour() {
 
-        requestAppointmentBehaviour = new RequestAppointment(dfSubscription);
+        requestAppointmentBehaviour = new RequestAppointment(dfSubscription, this);
         addBehaviour(requestAppointmentBehaviour);
 
     }
@@ -52,7 +59,7 @@ public class PatientAgent extends Agent {
 
         SearchConstraints sc = new SearchConstraints();
         // We want to receive 10 results at most
-        sc.setMaxResults(MAX_AGENT_QUEUE);
+        sc.setMaxResults(GlobalAgentConstants.MAX_AGENT_QUEUE);
 
         dfSubscription = new DFPatientSubscription(this, DFService.createSubscriptionMessage(this, getDefaultDF(), template, sc));
         addBehaviour(dfSubscription);
@@ -61,5 +68,6 @@ public class PatientAgent extends Agent {
     protected void takedown() {
 
     }
+
 
 }
