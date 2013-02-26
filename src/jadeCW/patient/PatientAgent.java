@@ -66,7 +66,11 @@ public class PatientAgent extends Agent {
     }
 
     protected void takedown() {
-
+        Integer allocation = null;
+        if (currentAllocation != GlobalAgentConstants.APPOINTMENT_UNINITIALIZED) {
+            allocation = currentAllocation;
+        }
+        System.out.println(getName() + ": " + allocation);
     }
 
 

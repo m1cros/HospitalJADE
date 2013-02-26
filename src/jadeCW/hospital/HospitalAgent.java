@@ -72,5 +72,12 @@ public class HospitalAgent extends Agent {
         return appointments;
     }
 
+    protected void takedown() {
+        for(int i = 0;i < appointments.length;++i) {
+            System.out.println(getName() + ": Appointment " + (i+1) + ": " + appointments[i]);
+        }
+    }
+
+
 
 }
