@@ -1,13 +1,10 @@
-package jadeCW.patient;
+package jadeCW;
 
 import jade.core.Agent;
 import jade.domain.DFService;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.SearchConstraints;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
-import jadeCW.InvalidAgentInputException;
-import jadeCW.patient.patientBehaviour.RequestAppointment;
-import jadeCW.utils.GlobalAgentConstants;
 
 public class PatientAgent extends Agent {
 
@@ -41,10 +38,10 @@ public class PatientAgent extends Agent {
 
     private void initializeArguments() {
         Object[] args = getArguments();
-        if (args != null && args.length == 1 && args[0] instanceof String) {
+        if (args != null && args.length > 1 && args[0] instanceof String) {
             patientPreference = new PatientPreference((String) args[0]);
         } else {
-            throw new InvalidAgentInputException();
+            patientPreference = new PatientPreference();
         }
     }
 
@@ -65,7 +62,7 @@ public class PatientAgent extends Agent {
         addBehaviour(dfSubscription);
     }
 
-    protected void takedown() {
+    protected void takeDown() {
         Integer allocation = null;
         if (currentAllocation != GlobalAgentConstants.APPOINTMENT_UNINITIALIZED) {
             allocation = currentAllocation;

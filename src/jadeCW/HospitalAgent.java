@@ -1,4 +1,4 @@
-package jadeCW.hospital;
+package jadeCW;
 
 import jade.core.AID;
 import jade.core.Agent;
@@ -6,14 +6,12 @@ import jade.domain.DFService;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.domain.FIPAException;
-import jadeCW.InvalidAgentInputException;
-import jadeCW.ServiceRegistrationException;
-import jadeCW.utils.GlobalAgentConstants;
 
 public class HospitalAgent extends Agent {
 
     private int appointmentsNum = GlobalAgentConstants.APPOINTMENT_NUMBERS_NOT_INITIALIZED;
     private AID[] appointments;
+    private AllocateAppointment allocateAppointment;
 
     public int getFreeAppointment() {
         int freeAppointment = GlobalAgentConstants.APPOINTMENT_NUMBERS_NOT_INITIALIZED;
@@ -31,11 +29,14 @@ public class HospitalAgent extends Agent {
     }
 
     protected void setup() {
+        System.out.println("Initialization of hospital agent: " + getLocalName());
 
         appointmentsNum = readInAppointments();
         initializeEmptyAppointments();
         registerService();
 
+        allocateAppointment = new AllocateAppointment(this);
+        addBehaviour(allocateAppointment);
     }
 
     private void initializeEmptyAppointments() {
@@ -50,6 +51,7 @@ public class HospitalAgent extends Agent {
 
             ServiceDescription sd = new ServiceDescription();
             sd.setType(GlobalAgentConstants.APPOINTMENT_SERVICE_TYPE);
+            sd.setName(getName() + "ServiceDescription");
 
             dfd.addServices(sd);
             DFService.register(this, dfd);
@@ -72,9 +74,10 @@ public class HospitalAgent extends Agent {
         return appointments;
     }
 
-    protected void takedown() {
+    protected void takeDown() {
+
         for(int i = 0;i < appointments.length;++i) {
-            System.out.println(getName() + ": Appointment " + (i+1) + ": " + appointments[i]);
+            System.out.println(getName() + ": Appointment " + (i + 1) + ": " + appointments[i]);
         }
     }
 

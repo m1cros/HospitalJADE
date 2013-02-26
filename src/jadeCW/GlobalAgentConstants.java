@@ -1,4 +1,4 @@
-package jadeCW.utils;
+package jadeCW;
 
 public class GlobalAgentConstants {
 

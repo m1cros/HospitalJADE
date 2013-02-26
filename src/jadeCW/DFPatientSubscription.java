@@ -1,4 +1,4 @@
-package jadeCW.patient;
+package jadeCW;
 
 import jade.core.AID;
 import jade.core.Agent;
@@ -9,9 +9,6 @@ import jade.domain.FIPAException;
 import jade.lang.acl.ACLMessage;
 import jade.proto.SubscriptionInitiator;
 import jade.util.leap.Iterator;
-import jadeCW.ServiceRegistrationException;
-import jadeCW.hospital.HospitalAgent;
-import jadeCW.utils.GlobalAgentConstants;
 
 import java.util.ArrayList;
 import java.util.List;

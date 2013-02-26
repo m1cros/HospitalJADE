@@ -1,4 +1,4 @@
-package jadeCW.patient;
+package jadeCW;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,6 +6,8 @@ import java.util.List;
 public class PatientPreference {
 
     private List<PreferenceLevel> preferenceLevels = new ArrayList<PreferenceLevel>();
+
+    public PatientPreference() {}
 
     public PatientPreference(String preferenceSpecification) {
         String[] splitPrefs = preferenceSpecification.split("-");

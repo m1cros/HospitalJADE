@@ -1,10 +1,8 @@
-package jadeCW.patient.patientBehaviour;
+package jadeCW;
 
 import jade.core.behaviours.Behaviour;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.lang.acl.ACLMessage;
-import jadeCW.patient.DFPatientSubscription;
-import jadeCW.patient.PatientAgent;
 
 public class RequestAppointment extends Behaviour {
 

@@ -1,10 +1,8 @@
-package jadeCW.hospital.hospitalBehaviour;
+package jadeCW;
 
 import jade.core.AID;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
-import jadeCW.hospital.HospitalAgent;
-import jadeCW.utils.GlobalAgentConstants;
 
 public class AllocateAppointment extends CyclicBehaviour {
 
