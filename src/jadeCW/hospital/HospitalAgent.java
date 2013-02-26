@@ -5,11 +5,13 @@ import jade.domain.DFService;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.domain.FIPAException;
+import jadeCW.InvalidAgentInputException;
 import jadeCW.ServiceRegistrationException;
+import jadeCW.utils.GlobalAgentConstants;
 
 public class HospitalAgent extends Agent {
 
-    private static final String SERVICE_TYPE = "allocate-appointments";
+
     private static final int NOT_INITIALIZED = -1;
     private int appointmentsNum = NOT_INITIALIZED;
 
@@ -17,7 +19,7 @@ public class HospitalAgent extends Agent {
 
         appointmentsNum = readInAppointments();
         // Register the service
-        System.out.println("Agent " + getLocalName() + " registering service of type " + SERVICE_TYPE);
+        System.out.println("Agent " + getLocalName() + " registering service of type " + GlobalAgentConstants.APPOINTMENT_SERVICE_TYPE);
 
         try {
             registerService();
@@ -33,7 +35,7 @@ public class HospitalAgent extends Agent {
         dfd.setName(getAID());
 
         ServiceDescription sd = new ServiceDescription();
-        sd.setType(SERVICE_TYPE);
+        sd.setType(GlobalAgentConstants.APPOINTMENT_SERVICE_TYPE);
 
         dfd.addServices(sd);
         DFService.register(this, dfd);
@@ -46,7 +48,7 @@ public class HospitalAgent extends Agent {
         if (args != null && args.length == 1 && args[0] instanceof String) {
             appointments = new Integer((String) args[0]);
         } else {
-            throw new InvalidAppointmentFormatException();
+            throw new InvalidAgentInputException();
         }
 
         return appointments;
