@@ -11,8 +11,8 @@ import jadeCW.utils.GlobalAgentConstants;
 public class RequestAppointment extends Behaviour {
 
     private boolean isAllocated = false;
-    private DFPatientSubscription dfSubscription;
-    private PatientAgent patientAgent;
+    private final DFPatientSubscription dfSubscription;
+    private final PatientAgent patientAgent;
 
     public RequestAppointment(DFPatientSubscription dfSubscription, PatientAgent patientAgent) {
         this.dfSubscription = dfSubscription;
@@ -49,15 +49,23 @@ public class RequestAppointment extends Behaviour {
 
     private void receiveResponse() {
 
-        ACLMessage msg = null;
-        while(msg == null) msg = patientAgent.receive( MessageTemplate.MatchPerformative(ACLMessage.INFORM));
+        ACLMessage message = null;
+        while(message == null) message = patientAgent.receive();
 
-        int currentAllocation = Integer.parseInt(msg.getContent());
+        if(message.getPerformative() == ACLMessage.PROPOSE) {
+            int currentAllocation = Integer.parseInt(message.getContent());
 
-        if(currentAllocation == GlobalAgentConstants.APPOINTMENT_UNINITIALIZED) {
             patientAgent.setCurrentAllocation(currentAllocation);
             isAllocated = true;
+
+            confirmAppointment(message);
         }
+
+    }
+
+    private void confirmAppointment(ACLMessage message) {
+
+
 
     }
 

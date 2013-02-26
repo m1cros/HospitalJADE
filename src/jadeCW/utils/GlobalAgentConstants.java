@@ -8,4 +8,6 @@ public class GlobalAgentConstants {
 
     public static final int APPOINTMENT_UNINITIALIZED = -1;
 
+    public static final int APPOINTMENT_NUMBERS_NOT_INITIALIZED = -1;
+
 }
