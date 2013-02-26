@@ -3,10 +3,8 @@ package jadeCW.patient.patientBehaviour;
 import jade.core.behaviours.Behaviour;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.lang.acl.ACLMessage;
-import jade.lang.acl.MessageTemplate;
 import jadeCW.patient.DFPatientSubscription;
 import jadeCW.patient.PatientAgent;
-import jadeCW.utils.GlobalAgentConstants;
 
 public class RequestAppointment extends Behaviour {
 
@@ -35,7 +33,6 @@ public class RequestAppointment extends Behaviour {
 
             }
         }
-
     }
 
     private void requestAppointment(DFAgentDescription appointmentAgentDescription) {
@@ -49,18 +46,14 @@ public class RequestAppointment extends Behaviour {
 
     private void receiveResponse() {
 
-        ACLMessage message = null;
-        while(message == null) message = patientAgent.receive();
+        ACLMessage message = patientAgent.blockingReceive();
 
         if(message.getPerformative() == ACLMessage.PROPOSE) {
             int currentAllocation = Integer.parseInt(message.getContent());
 
             patientAgent.setCurrentAllocation(currentAllocation);
             isAllocated = true;
-
-            confirmAppointment(message);
         }
-
     }
 
     private void confirmAppointment(ACLMessage message) {

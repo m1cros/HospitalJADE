@@ -1,5 +1,6 @@
 package jadeCW.hospital;
 
+import jade.core.AID;
 import jade.core.Agent;
 import jade.domain.DFService;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
@@ -12,12 +13,33 @@ import jadeCW.utils.GlobalAgentConstants;
 public class HospitalAgent extends Agent {
 
     private int appointmentsNum = GlobalAgentConstants.APPOINTMENT_NUMBERS_NOT_INITIALIZED;
+    private AID[] appointments;
+
+    public int getFreeAppointment() {
+        int freeAppointment = GlobalAgentConstants.APPOINTMENT_NUMBERS_NOT_INITIALIZED;
+        for(int i = 0;i < appointmentsNum && freeAppointment == GlobalAgentConstants.APPOINTMENT_NUMBERS_NOT_INITIALIZED;++i) {
+            if(appointments[i] == null) {
+                freeAppointment = i;
+            }
+        }
+
+        return freeAppointment;
+    }
+
+    public void setAppointment(int appointmentTime, AID patientID) {
+        appointments[appointmentTime] = patientID;
+    }
 
     protected void setup() {
 
         appointmentsNum = readInAppointments();
+        initializeEmptyAppointments();
         registerService();
 
+    }
+
+    private void initializeEmptyAppointments() {
+        appointments = new AID[appointmentsNum];
     }
 
     private void registerService() {
@@ -42,7 +64,7 @@ public class HospitalAgent extends Agent {
         int appointments;
         Object[] args = getArguments();
         if (args != null && args.length == 1 && args[0] instanceof String) {
-            appointments = new Integer((String) args[0]);
+            appointments = Integer.parseInt((String) args[0]);
         } else {
             throw new InvalidAgentInputException();
         }
