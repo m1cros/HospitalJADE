@@ -27,7 +27,7 @@ public class PatientAgent extends Agent {
 
     private void addPatientBehaviour() {
 
-        requestAppointmentBehaviour = new RequestAppointment();
+        requestAppointmentBehaviour = new RequestAppointment(dfSubscription);
         addBehaviour(requestAppointmentBehaviour);
 
     }

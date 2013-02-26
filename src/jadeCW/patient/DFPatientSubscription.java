@@ -2,16 +2,15 @@ package jadeCW.patient;
 
 import jade.core.AID;
 import jade.core.Agent;
-import jade.core.behaviours.DataStore;
 import jade.domain.DFService;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
-import jade.domain.FIPAAgentManagement.SearchConstraints;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.domain.FIPAException;
 import jade.lang.acl.ACLMessage;
 import jade.proto.SubscriptionInitiator;
 import jade.util.leap.Iterator;
 import jadeCW.ServiceRegistrationException;
+import jadeCW.hospital.HospitalAgent;
 import jadeCW.utils.GlobalAgentConstants;
 
 import java.util.ArrayList;
@@ -25,8 +24,17 @@ public class DFPatientSubscription extends SubscriptionInitiator {
         super(a, msg);
     }
 
+    public synchronized DFAgentDescription getAgentDescription() {
+        if(!allocateApptsAgents.isEmpty()) {
+            // ehhh....  brzydkie
+            return allocateApptsAgents.get(0);
+        } else {
+            return null;
+        }
+    }
 
-    protected void handleInform(ACLMessage inform) {
+
+    protected synchronized void handleInform(ACLMessage inform) {
 
         try {
             DFAgentDescription[] results = DFService.decodeNotification(inform.getContent());
