@@ -77,7 +77,11 @@ public class HospitalAgent extends Agent {
     protected void takeDown() {
 
         for(int i = 0;i < appointments.length;++i) {
-            System.out.println(getName() + ": Appointment " + (i + 1) + ": " + appointments[i]);
+            String appointmentName = null;
+            if(appointments[i] != null) {
+                appointmentName = appointments[i].getLocalName();
+            }
+            System.out.println(getLocalName() + ": Appointment " + (i + 1) + ": " + appointmentName);
         }
     }
 
