@@ -22,12 +22,17 @@ public class DFPatientSubscription extends SubscriptionInitiator {
     }
 
     public synchronized DFAgentDescription getAgentDescription() {
-        if(!allocateApptsAgents.isEmpty()) {
-            // ehhh....  brzydkie
-            return allocateApptsAgents.get(0);
-        } else {
-            return null;
+
+        while(allocateApptsAgents.isEmpty()) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                new RuntimeException(e);
+            }
         }
+
+        return allocateApptsAgents.get(0);
+
     }
 
 
@@ -56,6 +61,8 @@ public class DFPatientSubscription extends SubscriptionInitiator {
         } catch (FIPAException fe) {
             throw new ServiceRegistrationException(fe);
         }
+
+        notifyAll();
     }
 
 }

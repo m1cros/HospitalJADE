@@ -40,6 +40,7 @@ public class PatientAgent extends Agent {
 
         initializeArguments();
         subscribeToDFAgents();
+
         addPatientBehaviour();
     }
 
