@@ -1,8 +1,11 @@
 package jadeCW;
 
+import jade.content.ContentElement;
+import jade.content.lang.Codec;
+import jade.content.onto.OntologyException;
 import jade.core.behaviours.Behaviour;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
-import jade.domain.introspection.ReceivedMessage;
+import jade.domain.FIPANames;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 
@@ -38,27 +41,51 @@ public class RequestAppointment extends Behaviour {
     private void requestAppointment(DFAgentDescription appointmentAgentDescription) {
 
         ACLMessage appointmentRequestMessage = new ACLMessage(ACLMessage.REQUEST);
-        appointmentRequestMessage.addReceiver(appointmentAgentDescription.getName());
-        appointmentRequestMessage.setSender(patientAgent.getAID());
+        appointmentRequestMessage.setProtocol(FIPANames.InteractionProtocol.FIPA_REQUEST);
+        appointmentRequestMessage.setLanguage(patientAgent.getCodec().getName());
+        appointmentRequestMessage.setOntology(HospitalOntology.NAME);
+        appointmentRequestMessage.setContent(GlobalAgentConstants.APPOINTMENT_SERVICE_TYPE);
 
+        appointmentRequestMessage.addReceiver(appointmentAgentDescription.getName());
         patientAgent.send(appointmentRequestMessage);
 
     }
 
     private void receiveResponse() {
 
-        MessageTemplate messageTemplate = MessageTemplate.or(
-                MessageTemplate.MatchPerformative(ACLMessage.PROPOSE),
-                MessageTemplate.MatchPerformative(ACLMessage.REFUSE));
+        MessageTemplate mt = MessageTemplate.and(
+                MessageTemplate.MatchProtocol(FIPANames.InteractionProtocol.FIPA_REQUEST),
+                MessageTemplate.and(
+                        MessageTemplate.MatchOntology(HospitalOntology.NAME),
+                        MessageTemplate.and(
+                                MessageTemplate.MatchLanguage(patientAgent.getCodec().getName()),
+                                MessageTemplate.MatchPerformative(ACLMessage.PROPOSE)
 
-        ACLMessage message = patientAgent.blockingReceive(messageTemplate);
+                        )
 
-        if(message.getPerformative() == ACLMessage.PROPOSE) {
-            int currentAllocation = Integer.parseInt(message.getContent());
+                )
+        );
 
-            patientAgent.setCurrentAllocation(currentAllocation);
 
-            isAllocated = true;
+        ACLMessage message = patientAgent.blockingReceive(mt);
+
+        if (message.getPerformative() == ACLMessage.PROPOSE) {
+
+            ContentElement p = null;
+            try {
+                p = patientAgent.getContentManager().extractContent(message);
+            } catch (Codec.CodecException e) {
+                throw new RuntimeException(e);
+            } catch (OntologyException e) {
+                throw new RuntimeException(e);
+            }
+
+            if(p instanceof Appointment) {
+                Appointment appointment = (Appointment) p;
+                patientAgent.setCurrentAllocation(appointment.getAllocation());
+
+                isAllocated = true;
+            }
         }
     }
 

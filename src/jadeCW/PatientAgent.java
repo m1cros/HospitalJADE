@@ -1,5 +1,8 @@
 package jadeCW;
 
+import jade.content.ContentManager;
+import jade.content.lang.Codec;
+import jade.content.lang.sl.SLCodec;
 import jade.core.Agent;
 import jade.domain.DFService;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
@@ -17,7 +20,14 @@ public class PatientAgent extends Agent {
     private FindAppointmentOwner findAppointmentOwner;
     private int currentAllocation = GlobalAgentConstants.APPOINTMENT_UNINITIALIZED;
 
-    List<AllocationState> allocationStates = new ArrayList<AllocationState>();
+    private final ContentManager contentManager = (ContentManager)getContentManager();
+    private final Codec codec = new SLCodec();
+
+    private List<AllocationState> allocationStates = new ArrayList<AllocationState>();
+
+    public Codec getCodec() {
+        return codec;
+    }
 
     public int getCurrentAllocation() {
         return currentAllocation;
@@ -37,6 +47,9 @@ public class PatientAgent extends Agent {
 
     protected void setup() {
         System.out.println("Initialization of patient agent: " + getLocalName());
+
+        contentManager.registerLanguage(codec);
+        contentManager.registerOntology(HospitalOntology.getInstance());
 
         initializeArguments();
         subscribeToDFAgents();

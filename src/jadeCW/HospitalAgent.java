@@ -1,5 +1,8 @@
 package jadeCW;
 
+import jade.content.ContentManager;
+import jade.content.lang.Codec;
+import jade.content.lang.sl.SLCodec;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.domain.DFService;
@@ -9,7 +12,6 @@ import jade.domain.FIPAException;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.TreeMap;
 
 public class HospitalAgent extends Agent {
 
@@ -18,6 +20,13 @@ public class HospitalAgent extends Agent {
 
     private AllocateAppointment allocateAppointment;
     private RespondToQuery respondToQuery;
+
+    private final ContentManager contentManager = (ContentManager)getContentManager();
+    private final Codec codec = new SLCodec();
+
+    public Codec getCodec() {
+        return codec;
+    }
 
     public int getFreeAppointment() {
         int freeAppointment = GlobalAgentConstants.APPOINTMENT_NUMBERS_NOT_INITIALIZED;
@@ -49,6 +58,9 @@ public class HospitalAgent extends Agent {
 
     protected void setup() {
         System.out.println("Initialization of hospital agent: " + getLocalName());
+
+        contentManager.registerLanguage(codec);
+        contentManager.registerOntology(HospitalOntology.getInstance());
 
         appointmentsNum = readInAppointments();
 

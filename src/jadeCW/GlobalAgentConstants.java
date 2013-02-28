@@ -1,5 +1,9 @@
 package jadeCW;
 
+import jade.domain.FIPANames;
+import jade.lang.acl.ACLMessage;
+import jade.lang.acl.MessageTemplate;
+
 public class GlobalAgentConstants {
 
     public static final String APPOINTMENT_SERVICE_TYPE = "allocate-appointments";
@@ -19,5 +23,23 @@ public class GlobalAgentConstants {
     public static final int APPOINTMENT_UNINITIALIZED = -1;
 
     public static final int APPOINTMENT_NUMBERS_NOT_INITIALIZED = -1;
+
+    public static MessageTemplate getFipaHospitalTemplate(String content, int performative, String language) {
+        MessageTemplate mt = MessageTemplate.and(
+                MessageTemplate.MatchProtocol(FIPANames.InteractionProtocol.FIPA_REQUEST),
+                MessageTemplate.and(
+                    MessageTemplate.MatchOntology(HospitalOntology.NAME),
+                    MessageTemplate.and(
+                            MessageTemplate.MatchLanguage(language),
+                            MessageTemplate.and(
+                                    MessageTemplate.MatchContent(content),
+                                    MessageTemplate.MatchPerformative(performative)
+                            )
+                    )
+
+                )
+        );
+        return mt;
+    }
 
 }

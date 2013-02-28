@@ -1,7 +1,11 @@
 package jadeCW;
 
+import jade.content.ContentManager;
+import jade.content.lang.Codec;
+import jade.content.onto.OntologyException;
 import jade.core.AID;
 import jade.core.behaviours.CyclicBehaviour;
+import jade.domain.FIPANames;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 
@@ -16,7 +20,12 @@ public class AllocateAppointment extends CyclicBehaviour {
     @Override
     public void action() {
 
-        ACLMessage message = hospitalAgent.receive(MessageTemplate.MatchPerformative(ACLMessage.REQUEST));
+        MessageTemplate mt = GlobalAgentConstants.getFipaHospitalTemplate(
+                GlobalAgentConstants.APPOINTMENT_SERVICE_TYPE,
+                ACLMessage.REQUEST,
+                hospitalAgent.getCodec().getName());
+
+        ACLMessage message = hospitalAgent.receive(mt);
 
         if (message != null) {
             int freeAppointment = hospitalAgent.getFreeAppointment();
@@ -35,6 +44,10 @@ public class AllocateAppointment extends CyclicBehaviour {
 
     private void refuseAppointment(AID receiver) {
         ACLMessage proposeMessage = new ACLMessage(ACLMessage.REFUSE);
+        proposeMessage.setProtocol(FIPANames.InteractionProtocol.FIPA_REQUEST);
+        proposeMessage.setLanguage(hospitalAgent.getCodec().getName());
+        proposeMessage.setOntology(HospitalOntology.NAME);
+        proposeMessage.setContent(GlobalAgentConstants.APPOINTMENT_SERVICE_TYPE);
         proposeMessage.addReceiver(receiver);
 
         hospitalAgent.send(proposeMessage);
@@ -43,8 +56,24 @@ public class AllocateAppointment extends CyclicBehaviour {
     private void proposeAppointment(AID receiver, Integer allocatedAppointment) {
 
         ACLMessage proposeMessage = new ACLMessage(ACLMessage.PROPOSE);
-        proposeMessage.setContent(allocatedAppointment.toString());
+        proposeMessage.setProtocol(FIPANames.InteractionProtocol.FIPA_REQUEST);
+        proposeMessage.setLanguage(hospitalAgent.getCodec().getName());
+        proposeMessage.setOntology(HospitalOntology.NAME);
+        proposeMessage.setContent(GlobalAgentConstants.APPOINTMENT_SERVICE_TYPE);
         proposeMessage.addReceiver(receiver);
+
+        Appointment appointment = new Appointment();
+        appointment.setAllocation(allocatedAppointment);
+        try {
+
+            hospitalAgent.getContentManager().fillContent(proposeMessage,appointment);
+            // TODO
+            // Umyj swiat i ta funkcje
+        } catch (Codec.CodecException e) {
+            throw new RuntimeException(e);
+        } catch (OntologyException e) {
+            throw new RuntimeException(e);
+        }
 
         hospitalAgent.send(proposeMessage);
 
