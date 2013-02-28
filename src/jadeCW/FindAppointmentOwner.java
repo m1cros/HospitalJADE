@@ -1,7 +1,11 @@
 package jadeCW;
 
+import jade.content.ContentElement;
+import jade.content.lang.Codec;
+import jade.content.onto.OntologyException;
 import jade.core.behaviours.Behaviour;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
+import jade.domain.FIPANames;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 
@@ -64,29 +68,73 @@ public class FindAppointmentOwner extends Behaviour {
     }
 
     private void queryPreferredAllocation(DFAgentDescription appointmentAgentDescription, int preferredAllocation) {
-        ACLMessage allocationQueryMessage = new ACLMessage(ACLMessage.QUERY_IF);
+
+        ACLMessage allocationQueryMessage = new ACLMessage(ACLMessage.QUERY_REF);
+        allocationQueryMessage.setProtocol(FIPANames.InteractionProtocol.FIPA_QUERY);
+        allocationQueryMessage.setLanguage(patientAgent.getCodec().getName());
+        allocationQueryMessage.setOntology(HospitalOntology.NAME);
+
         allocationQueryMessage.setSender(patientAgent.getAID());
         allocationQueryMessage.addReceiver(appointmentAgentDescription.getName());
-        allocationQueryMessage.addUserDefinedParameter(GlobalAgentConstants.APPOINTMENT_QUERY_FIELD, preferredAllocation + "");
+
+        Appointment appointment = new Appointment();
+        appointment.setAllocation(preferredAllocation);
+        try {
+
+            patientAgent.getContentManager().fillContent(allocationQueryMessage, appointment);
+            // TODO
+            // Umyj swiat i ta funkcje
+        } catch (Codec.CodecException e) {
+            throw new RuntimeException(e);
+        } catch (OntologyException e) {
+            throw new RuntimeException(e);
+        }
 
         patientAgent.send(allocationQueryMessage);
     }
 
     private AllocationState receivePreferredAllocationResponse(int preferredAllocation) {
         /* receiving response... */
-        ACLMessage allocationQueryResponseMessage = patientAgent.blockingReceive(MessageTemplate.MatchPerformative(ACLMessage.QUERY_REF));
 
-        String responseStatus = allocationQueryResponseMessage.getUserDefinedParameter(GlobalAgentConstants.APPOINTMENT_QUERY_RESPONSE_STATUS);
-        String patientAgentHolding = null;
+        MessageTemplate messageTemplate = MessageTemplate.and(
+                MessageTemplate.MatchProtocol(FIPANames.InteractionProtocol.FIPA_QUERY),
+                MessageTemplate.and(
+                        MessageTemplate.MatchOntology(HospitalOntology.NAME),
+                        MessageTemplate.and(
+                                MessageTemplate.MatchLanguage(patientAgent.getCodec().getName()),
+                                MessageTemplate.MatchPerformative(ACLMessage.QUERY_IF)
 
-        if (responseStatus.equals(GlobalAgentConstants.APPOINTMENT_QUERY_RESPONSE_STATUS_ALLOCATED)) {
-            /* Allocated appointment */
-            patientAgentHolding = allocationQueryResponseMessage.getUserDefinedParameter(GlobalAgentConstants.APPOINTMENT_QUERY_RESPONSE_AGENT_ID);
+                        )
+
+                )
+        );
+
+        ACLMessage allocationQueryResponseMessage = patientAgent.blockingReceive(messageTemplate);
+
+        ContentElement p = null;
+        try {
+            p = patientAgent.getContentManager().extractContent(allocationQueryResponseMessage);
+        } catch (Codec.CodecException e) {
+            throw new RuntimeException(e);
+        } catch (OntologyException e) {
+            throw new RuntimeException(e);
         }
 
-        AllocationState allocatedState = new AllocationState(preferredAllocation, responseStatus, patientAgentHolding);
+        if (p instanceof AppointmentQuery) {
+            AppointmentQuery appointmentQuery = (AppointmentQuery) p;
 
-        return allocatedState;
+            String responseStatus = appointmentQuery.getState();
+            String patientAgentHolding = appointmentQuery.getHolder();
+
+            AllocationState allocatedState = new AllocationState(preferredAllocation, responseStatus, patientAgentHolding);
+
+            return allocatedState;
+
+        } else {
+            throw new RuntimeException();
+        }
+
+
     }
 
     @Override

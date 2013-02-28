@@ -17,6 +17,11 @@ public class HospitalOntology extends Ontology {
     public static final String APPOINTMENT = "APPOINTMENT";
     public static final String ALLOCATION = "ALLOCATION";
 
+    public static final String APPOINTMENT_QUERY = "APPOINTMENT_QUERY";
+    public static final String APPOINTMENT_QUERY_TIME = "allocation";
+    public static final String APPOINTMENT_QUERY_STATE = "state";
+    public static final String APPOINTMENT_QUERY_HOLDER = "holder";
+
     private static Ontology theInstance = new HospitalOntology();
 
     public static Ontology getInstance() {
@@ -37,6 +42,12 @@ public class HospitalOntology extends Ontology {
             appointmentSchema.add(ALLOCATION, integerSchema,  ObjectSchema.MANDATORY);
 
             add(appointmentSchema, Appointment.class);
+
+            PredicateSchema appointmentQuerySchema = new PredicateSchema(APPOINTMENT_QUERY);
+            appointmentQuerySchema.add(APPOINTMENT_QUERY_TIME, integerSchema, ObjectSchema.MANDATORY);
+            appointmentQuerySchema.add(APPOINTMENT_QUERY_STATE, stringSchema, ObjectSchema.MANDATORY);
+            appointmentQuerySchema.add(APPOINTMENT_QUERY_STATE, stringSchema, ObjectSchema.OPTIONAL);
+            add(appointmentQuerySchema, AppointmentQuery.class);
 
         } catch (OntologyException e) {
             throw new RuntimeException(e);

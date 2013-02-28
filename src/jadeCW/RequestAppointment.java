@@ -53,7 +53,7 @@ public class RequestAppointment extends Behaviour {
 
     private void receiveResponse() {
 
-        MessageTemplate mt = MessageTemplate.and(
+        MessageTemplate messageTemplatePropose = MessageTemplate.and(
                 MessageTemplate.MatchProtocol(FIPANames.InteractionProtocol.FIPA_REQUEST),
                 MessageTemplate.and(
                         MessageTemplate.MatchOntology(HospitalOntology.NAME),
@@ -66,8 +66,23 @@ public class RequestAppointment extends Behaviour {
                 )
         );
 
+        MessageTemplate messageTemplateRefuse = MessageTemplate.and(
+                MessageTemplate.MatchProtocol(FIPANames.InteractionProtocol.FIPA_REQUEST),
+                MessageTemplate.and(
+                        MessageTemplate.MatchOntology(HospitalOntology.NAME),
+                        MessageTemplate.and(
+                                MessageTemplate.MatchLanguage(patientAgent.getCodec().getName()),
+                                MessageTemplate.MatchPerformative(ACLMessage.REFUSE)
 
-        ACLMessage message = patientAgent.blockingReceive(mt);
+                        )
+
+                )
+        );
+
+        MessageTemplate messageTemplate = MessageTemplate.or(messageTemplatePropose,messageTemplateRefuse);
+
+
+        ACLMessage message = patientAgent.blockingReceive(messageTemplate);
 
         if (message.getPerformative() == ACLMessage.PROPOSE) {
 
@@ -80,7 +95,7 @@ public class RequestAppointment extends Behaviour {
                 throw new RuntimeException(e);
             }
 
-            if(p instanceof Appointment) {
+            if (p instanceof Appointment) {
                 Appointment appointment = (Appointment) p;
                 patientAgent.setCurrentAllocation(appointment.getAllocation());
 

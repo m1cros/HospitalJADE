@@ -1,6 +1,5 @@
 package jadeCW;
 
-import jade.content.ContentManager;
 import jade.content.lang.Codec;
 import jade.content.onto.OntologyException;
 import jade.core.AID;
