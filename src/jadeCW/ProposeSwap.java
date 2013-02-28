@@ -40,6 +40,7 @@ public class ProposeSwap extends Behaviour {
             while (allocationStateIterator.hasNext() && !didSwap) {
 
                 AllocationState allocationState = allocationStateIterator.next();
+                allocationStateIterator.remove();
 
                 AgentAllocationSwap agentAllocationSwap = new AgentAllocationSwap();
                 agentAllocationSwap.setCurrentAllocation(patientAgent.getCurrentAllocation());
@@ -50,23 +51,18 @@ public class ProposeSwap extends Behaviour {
                     String allocationHolderName = allocationState.getAppointmentHolder();
                     AID allocationHolderAID = new AID(allocationHolderName, AID.ISGUID);
                     requestSwapWithAgent(allocationHolderAID, agentAllocationSwap);
-                    receiveResponse(appointmentAgentDescription.getName(), agentAllocationSwap,
-                            allocationStateIterator,updatedAllocationStates);
 
                 } else if (allocationState.getAppointmentStatus().equals(GlobalAgentConstants.APPOINTMENT_QUERY_RESPONSE_STATUS_FREE)) {
                     // need to talk to hospital
                     requestSwapWithAgent(appointmentAgentDescription.getName(), agentAllocationSwap);
-                    receiveResponse(appointmentAgentDescription.getName(), agentAllocationSwap, allocationStateIterator, updatedAllocationStates);
 
                 } else {
                     // if there is another kind of query response status
                     throw new RuntimeException();
                 }
 
-                updatedAllocationStates.add(allocationState);
+                receiveResponse(appointmentAgentDescription.getName(), agentAllocationSwap, updatedAllocationStates, allocationState);
             }
-
-            updatedAllocationStates.addAll(allocationStates);
 
             Collections.sort(updatedAllocationStates, new Comparator<AllocationState>() {
                 public int compare(AllocationState allocationState, AllocationState allocationState1) {
@@ -88,14 +84,10 @@ public class ProposeSwap extends Behaviour {
         swapMessage.setProtocol(FIPANames.InteractionProtocol.FIPA_PROPOSE);
         swapMessage.setLanguage(patientAgent.getCodec().getName());
         swapMessage.setOntology(HospitalOntology.NAME);
-
         swapMessage.addReceiver(agent);
 
         try {
-
             patientAgent.getContentManager().fillContent(swapMessage, agentAllocationSwap);
-            // TODO
-            // Umyj swiat i ta funkcje
         } catch (Codec.CodecException e) {
             throw new RuntimeException(e);
         } catch (OntologyException e) {
@@ -106,8 +98,7 @@ public class ProposeSwap extends Behaviour {
     }
 
     private void receiveResponse(AID hospitalAgent, AgentAllocationSwap agentAllocationSwap,
-                                 Iterator<AllocationState> allocationStateIterator,
-                                 List<AllocationState> updatedAllocationStates) {
+                                 List<AllocationState> newAllocationStates) {
 
         MessageTemplate messageTemplateAccept = MessageTemplate.and(
                 MessageTemplate.MatchProtocol(FIPANames.InteractionProtocol.FIPA_PROPOSE),
@@ -138,23 +129,26 @@ public class ProposeSwap extends Behaviour {
         ACLMessage message = patientAgent.blockingReceive(messageTemplate);
 
         if (message.getPerformative() == ACLMessage.ACCEPT_PROPOSAL) {
-            // THE AGENT HAS ACCEPTED!
-            patientAgent.setCurrentAllocation(agentAllocationSwap.getDesiredAllocation());
-
-            // Inform the HospitalAgent that the two agents have swapped appointments,
-            // if a swap was made with an agent that is not a HospitalAgent.
-            AID sender = message.getSender();
-            if (sender != hospitalAgent) {
-                // the sender is not the hospitalAgent
-                informHospitalAgentOfSwap(hospitalAgent, agentAllocationSwap);
+            int agentNewAppointment = agentAllocationSwap.getDesiredAllocation();
+            if (message.getSender() == hospitalAgent) {
+                // we swapped with hospital, so we just update our current allocation
+                patientAgent.setCurrentAllocation(agentNewAppointment);
             }
-
+            else {
+                // we swapped with another agent, we update our current appointment and
+                // notify the hospital
+                patientAgent.setCurrentAllocation(agentNewAppointment);
+                informHospitalAgentOfSwap(hospitalAgent, agentAllocationSwap)
+            }
             didSwap = true;
-        } else {
-            ContentElement p = null;
-            int allocation;
-            String holder;
+        }
 
+        else {
+            // get return message
+            // the message informs us who currently holds the allocation we desired
+            // and whats the current allocation
+            SwapAllocationUpdate swapAllocationUpdate = null;
+            ContentElement p = null;
             try {
                 p = patientAgent.getContentManager().extractContent(message);
             } catch (Codec.CodecException e) {
@@ -162,23 +156,38 @@ public class ProposeSwap extends Behaviour {
             } catch (OntologyException e) {
                 throw new RuntimeException(e);
             }
-
             if (p instanceof SwapAllocationUpdate) {
-                SwapAllocationUpdate swapAllocationUpdate = (SwapAllocationUpdate) p;
-
-                allocation = swapAllocationUpdate.getAllocation();
-                holder = swapAllocationUpdate.getHolder();
-
+                swapAllocationUpdate = (SwapAllocationUpdate) p;
             } else {
                 throw new RuntimeException();
             }
-            // this is a rejection
-            if (agentAllocationSwap.getDesiredAllocation() != allocation) {
 
-                allocationStateIterator.remove();
-                AllocationState allocationState = new AllocationState(allocation, GlobalAgentConstants.APPOINTMENT_QUERY_RESPONSE_STATUS_ALLOCATED, holder);
+            if (message.getSender() == hospitalAgent) {
+                // we got refused by the hospital agent, the desired allocation is not free anymore
+                String currentAllocationHolder = swapAllocationUpdate.getHolder();
+                AllocationState newAllocationState
+                        = new AllocationState(agentAllocationSwap.getDesiredAllocation(),
+                                              GlobalAgentConstants.APPOINTMENT_QUERY_RESPONSE_STATUS_ALLOCATED,
+                                              currentAllocationHolder);
+                newAllocationStates.add(newAllocationState);
+            }
 
-                updatedAllocationStates.add(allocationState);
+            else {
+                // we got refused by the other agent
+                int responseAllocation = swapAllocationUpdate.getAllocation();
+                String currentAllocationHolder = swapAllocationUpdate.getHolder();
+                if (responseAllocation != agentAllocationSwap.getDesiredAllocation()) {
+                    // the sender has a new allocation
+
+                }
+                else {
+                    // the sender does not want to change
+                    AllocationState newAllocationState =
+                            new AllocationState(agentAllocationSwap.getDesiredAllocation(),
+                                    GlobalAgentConstants.APPOINTMENT_QUERY_RESPONSE_STATUS_ALLOCATED,
+                                    currentAllocationHolder);
+                    newAllocationStates.add(newAllocationState);
+                }
             }
         }
     }
