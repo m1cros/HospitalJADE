@@ -8,7 +8,8 @@ public class PatientPreference {
 
     private List<PreferenceLevel> preferenceLevels = new ArrayList<PreferenceLevel>();
 
-    public PatientPreference() {}
+    public PatientPreference() {
+    }
 
     public PatientPreference(String preferenceSpecification) {
         String[] splitPrefs = preferenceSpecification.split("-");
@@ -32,13 +33,37 @@ public class PatientPreference {
         Iterator<PreferenceLevel> preferenceLevelIterator = preferenceLevels.iterator();
         boolean foundCurrentAllocationPosition = false;
 
-        while(!foundCurrentAllocationPosition && preferenceLevelIterator.hasNext()) {
+        while (!foundCurrentAllocationPosition && preferenceLevelIterator.hasNext()) {
 
             PreferenceLevel preferenceLevel = preferenceLevelIterator.next();
-            foundCurrentAllocationPosition = preferenceLevel.addPreferredAllocations(currentAllocation,preferredAllocations);
+            foundCurrentAllocationPosition = preferenceLevel.addPreferredAllocations(currentAllocation, preferredAllocations);
 
         }
 
         return preferredAllocations;
     }
+
+    public boolean isAllocationSwapAcceptable(int newAllocation, int currentAllocation) {
+
+        Iterator<PreferenceLevel> preferenceLevelIterator = preferenceLevels.iterator();
+
+        while (preferenceLevelIterator.hasNext()) {
+
+            PreferenceLevel preferenceLevel = preferenceLevelIterator.next();
+
+            if(preferenceLevel.containsAllocation(newAllocation) && !preferenceLevel.containsAllocation(currentAllocation)) {
+                return true;
+            } else if(preferenceLevel.containsAllocation(currentAllocation)) {
+                return false;
+            }
+
+        }
+
+        return false;
+    }
+
+    public void updatePreferenceHolder(int allocation, String owner) {
+
+    }
+
 }

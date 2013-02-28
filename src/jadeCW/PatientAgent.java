@@ -14,6 +14,7 @@ import java.util.List;
 
 public class PatientAgent extends Agent {
 
+
     private PatientPreference patientPreference;
     private DFPatientSubscription dfSubscription;
     private RequestAppointment requestAppointmentBehaviour;
@@ -44,6 +45,10 @@ public class PatientAgent extends Agent {
     public void setAllocationStates(List<AllocationState> allocationStates) {
         this.allocationStates = allocationStates;
     }
+
+    public PatientPreference getPatientPreference() {
+            return patientPreference;
+     }
 
     protected void setup() {
         System.out.println("Initialization of patient agent: " + getLocalName());

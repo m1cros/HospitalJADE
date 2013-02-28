@@ -27,4 +27,8 @@ public class PreferenceLevel {
         return hasPreferredAllocations;
 
     }
+
+    public boolean containsAllocation(int newAllocation) {
+        return appointmentsId.contains(newAllocation);
+    }
 }
