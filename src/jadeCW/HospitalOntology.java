@@ -22,6 +22,14 @@ public class HospitalOntology extends Ontology {
     public static final String APPOINTMENT_QUERY_STATE = "state";
     public static final String APPOINTMENT_QUERY_HOLDER = "holder";
 
+    public static final String APPOINTMENT_SWAP_REQUEST = "APPOINTMENT_SWAP_REQUEST";
+    public static final String APPOINTMENT_SWAP_REQUEST_CURRENT_ALLOCATION = "currentAllocation";
+    public static final String APPOINTMENT_SWAP_REQUEST_DESIRED_ALLOCATION = "desiredAllocation";
+
+    public static final String SWAP_ALLOCATION_UPDATE = "SWAP_ALLOCATION_UPDATE";
+    public static final String SWAP_ALLOCATION_UPDATE_HOLDER = "SWAP_ALLOCATION_HOLDER";
+    public static final String SWAP_ALLOCATION_UPDATE_ALLOCATION = "SWAP_ALLOCATION_UPDATE_ALLOCATION";
+
     private static Ontology theInstance = new HospitalOntology();
 
     public static Ontology getInstance() {
@@ -35,11 +43,11 @@ public class HospitalOntology extends Ontology {
         super(NAME, BasicOntology.getInstance());
 
         try {
-            PrimitiveSchema stringSchema = (PrimitiveSchema)getSchema(BasicOntology.STRING);
-            PrimitiveSchema integerSchema = (PrimitiveSchema)getSchema(BasicOntology.INTEGER);
+            PrimitiveSchema stringSchema = (PrimitiveSchema) getSchema(BasicOntology.STRING);
+            PrimitiveSchema integerSchema = (PrimitiveSchema) getSchema(BasicOntology.INTEGER);
 
             PredicateSchema appointmentSchema = new PredicateSchema(APPOINTMENT);
-            appointmentSchema.add(ALLOCATION, integerSchema,  ObjectSchema.MANDATORY);
+            appointmentSchema.add(ALLOCATION, integerSchema, ObjectSchema.MANDATORY);
 
             add(appointmentSchema, Appointment.class);
 
@@ -48,6 +56,16 @@ public class HospitalOntology extends Ontology {
             appointmentQuerySchema.add(APPOINTMENT_QUERY_STATE, stringSchema, ObjectSchema.MANDATORY);
             appointmentQuerySchema.add(APPOINTMENT_QUERY_HOLDER, stringSchema, ObjectSchema.OPTIONAL);
             add(appointmentQuerySchema, AppointmentQuery.class);
+
+            PredicateSchema appointmentSwapRequestSchema = new PredicateSchema(APPOINTMENT_SWAP_REQUEST);
+            appointmentSwapRequestSchema.add(APPOINTMENT_SWAP_REQUEST_CURRENT_ALLOCATION, integerSchema, ObjectSchema.MANDATORY);
+            appointmentSwapRequestSchema.add(APPOINTMENT_SWAP_REQUEST_DESIRED_ALLOCATION, integerSchema, ObjectSchema.MANDATORY);
+            add(appointmentSwapRequestSchema, AgentAllocationSwap.class);
+
+            PredicateSchema swapAllocationUpdateSchema = new PredicateSchema(SWAP_ALLOCATION_UPDATE);
+            swapAllocationUpdateSchema.add(SWAP_ALLOCATION_UPDATE_HOLDER, stringSchema, ObjectSchema.MANDATORY);
+            swapAllocationUpdateSchema.add(SWAP_ALLOCATION_UPDATE_ALLOCATION, integerSchema, ObjectSchema.MANDATORY);
+            add(swapAllocationUpdateSchema);
 
         } catch (OntologyException e) {
             throw new RuntimeException(e);
