@@ -46,7 +46,7 @@ public class HospitalOntology extends Ontology {
             PredicateSchema appointmentQuerySchema = new PredicateSchema(APPOINTMENT_QUERY);
             appointmentQuerySchema.add(APPOINTMENT_QUERY_TIME, integerSchema, ObjectSchema.MANDATORY);
             appointmentQuerySchema.add(APPOINTMENT_QUERY_STATE, stringSchema, ObjectSchema.MANDATORY);
-            appointmentQuerySchema.add(APPOINTMENT_QUERY_STATE, stringSchema, ObjectSchema.OPTIONAL);
+            appointmentQuerySchema.add(APPOINTMENT_QUERY_HOLDER, stringSchema, ObjectSchema.OPTIONAL);
             add(appointmentQuerySchema, AppointmentQuery.class);
 
         } catch (OntologyException e) {

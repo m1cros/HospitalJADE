@@ -66,7 +66,7 @@ public class RespondToQuery extends CyclicBehaviour {
             AppointmentQuery appointmentQuery = new AppointmentQuery();
             appointmentQuery.setAllocation(allocation);
 
-            if (allocation < 0 || allocation >= hospitalAgent.getAppointmentsNum()) {
+            if (allocation < 1 || allocation > hospitalAgent.getAppointmentsNum()) {
 
                 appointmentQuery.setState(GlobalAgentConstants.APPOINTMENT_QUERY_RESPONSE_STATUS_INVALID);
 

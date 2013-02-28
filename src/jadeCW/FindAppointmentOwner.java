@@ -44,8 +44,8 @@ public class FindAppointmentOwner extends Behaviour {
             Iterator<Integer> preferredAllocationIterator = preferredAllocationsOverCurrent.iterator();
             boolean foundPreferredAllocation = false;
 
-
             System.out.println("Allocations tested by: " + patientAgent.getLocalName());
+            System.out.println(patientAgent.getLocalName() + ": " + preferredAllocationsOverCurrent.toString());
             while (preferredAllocationIterator.hasNext() && !foundPreferredAllocation) {
                 int preferredAllocation = preferredAllocationIterator.next();
                 /* 2. ask hospital agent who has got that preference */
@@ -54,12 +54,14 @@ public class FindAppointmentOwner extends Behaviour {
 
                 AllocationState allocationState = receivePreferredAllocationResponse(preferredAllocation);
 
-                if (allocationState.getAppointmentStatus() == GlobalAgentConstants.APPOINTMENT_QUERY_RESPONSE_STATUS_INVALID) {
+                if (!allocationState.getAppointmentStatus().equals(GlobalAgentConstants.APPOINTMENT_QUERY_RESPONSE_STATUS_INVALID)) {
                     allocationStates.add(allocationState);
                 }
 
                 System.out.println(patientAgent.getLocalName() + ": allocation state: " + allocationState.toString());
             }
+
+            System.out.println(patientAgent.getLocalName() + ": more preferred states: " + allocationStates.toString());
 
             patientAgent.setAllocationStates(allocationStates);
             allocationStatesSet = true;
