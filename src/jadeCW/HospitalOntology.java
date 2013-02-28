@@ -30,6 +30,12 @@ public class HospitalOntology extends Ontology {
     public static final String SWAP_ALLOCATION_UPDATE_HOLDER = "SWAP_ALLOCATION_HOLDER";
     public static final String SWAP_ALLOCATION_UPDATE_ALLOCATION = "SWAP_ALLOCATION_UPDATE_ALLOCATION";
 
+    public static final String ALLOCATION_SWAP_SUMMARY = "ALLOCATION_SWAP_SUMMARY";
+    public static final String ALLOCATION_SWAP_SUMMARY_LEFT_ALLOCATION = "leftAllocation";
+    public static final String ALLOCATION_SWAP_SUMMARY_LEFT_HOLDER = "leftHolder";
+    public static final String ALLOCATION_SWAP_SUMMARY_RIGHT_ALLOCATION = "rightAllocation";
+    public static final String ALLOCATION_SWAP_SUMMARY_RIGHT_HOLDER = "rightHolder";
+
     private static Ontology theInstance = new HospitalOntology();
 
     public static Ontology getInstance() {
@@ -65,7 +71,15 @@ public class HospitalOntology extends Ontology {
             PredicateSchema swapAllocationUpdateSchema = new PredicateSchema(SWAP_ALLOCATION_UPDATE);
             swapAllocationUpdateSchema.add(SWAP_ALLOCATION_UPDATE_HOLDER, stringSchema, ObjectSchema.MANDATORY);
             swapAllocationUpdateSchema.add(SWAP_ALLOCATION_UPDATE_ALLOCATION, integerSchema, ObjectSchema.MANDATORY);
-            add(swapAllocationUpdateSchema);
+            add(swapAllocationUpdateSchema, SwapAllocationUpdate.class);
+
+            PredicateSchema allocationSwapSummary = new PredicateSchema(ALLOCATION_SWAP_SUMMARY);
+            allocationSwapSummary.add(ALLOCATION_SWAP_SUMMARY_LEFT_ALLOCATION, stringSchema, ObjectSchema.MANDATORY);
+            allocationSwapSummary.add(ALLOCATION_SWAP_SUMMARY_LEFT_HOLDER, integerSchema, ObjectSchema.MANDATORY);
+            allocationSwapSummary.add(ALLOCATION_SWAP_SUMMARY_RIGHT_ALLOCATION, stringSchema, ObjectSchema.MANDATORY);
+            allocationSwapSummary.add(ALLOCATION_SWAP_SUMMARY_RIGHT_HOLDER, integerSchema, ObjectSchema.MANDATORY);
+            add(allocationSwapSummary,AllocationSwapSummary.class);
+
 
         } catch (OntologyException e) {
             throw new RuntimeException(e);

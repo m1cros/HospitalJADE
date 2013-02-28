@@ -118,6 +118,4 @@ public class HospitalAgent extends Agent {
         }
     }
 
-
-
 }

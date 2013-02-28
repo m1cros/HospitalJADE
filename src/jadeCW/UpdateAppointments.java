@@ -1,64 +1,93 @@
 package jadeCW;
 
+import jade.content.ContentElement;
+import jade.content.lang.Codec;
+import jade.content.onto.OntologyException;
 import jade.core.AID;
 import jade.core.behaviours.CyclicBehaviour;
+import jade.domain.FIPANames;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 
 public class UpdateAppointments extends CyclicBehaviour {
 
 
-    Map<AppointmentTuple, ArrayList<AID>> swappedAppointments;
+    Map<AppointmentTuple, Set<AID>> swappedAppointments;
 
     private final HospitalAgent hospitalAgent;
 
     public UpdateAppointments(HospitalAgent hospitalAgent) {
         this.hospitalAgent = hospitalAgent;
-        swappedAppointments = new HashMap<AppointmentTuple, ArrayList<AID>>();
+        swappedAppointments = new HashMap<AppointmentTuple, Set<AID>>();
     }
 
     @Override
     public void action() {
 
-        receiveSwapMessage();
+        MessageTemplate messageTemplateAccept = MessageTemplate.and(
+                MessageTemplate.MatchProtocol(FIPANames.InteractionProtocol.FIPA_PROPOSE),
+                MessageTemplate.and(
+                        MessageTemplate.MatchOntology(HospitalOntology.NAME),
+                        MessageTemplate.and(
+                                MessageTemplate.MatchLanguage(hospitalAgent.getCodec().getName()),
+                                MessageTemplate.MatchPerformative(ACLMessage.ACCEPT_PROPOSAL)
+                        )
+                )
+        );
 
-    }
-
-    private void receiveSwapMessage() {
-
-        ACLMessage message = hospitalAgent.receive(MessageTemplate.MatchPerformative(ACLMessage.INFORM));
+        ACLMessage message = hospitalAgent.receive(messageTemplateAccept);
 
         if (message != null) {
 
-            int oldAppointment = 0;
-            int newAppointment = 0;
-            AID ownerOldAppointment = null;
-            AID ownerNewAppointment = message.getSender();
+            ContentElement p = null;
+            AllocationSwapSummary allocationSwapSummary;
+
+            try {
+                p = hospitalAgent.getContentManager().extractContent(message);
+            } catch (Codec.CodecException e) {
+                throw new RuntimeException(e);
+            } catch (OntologyException e) {
+                throw new RuntimeException(e);
+            }
+
+            if (p instanceof AllocationSwapSummary) {
+                allocationSwapSummary = (AllocationSwapSummary) p;
+            } else {
+                throw new RuntimeException();
+            }
 
 
-            AppointmentTuple key = new AppointmentTuple(oldAppointment, newAppointment);
+            int leftAllocation = allocationSwapSummary.getLeftAllocation();
+            int rightAllocation = allocationSwapSummary.getRightAllocation();
+            String leftAllocationHolder = allocationSwapSummary.getLeftHolder();
+            String rightAllocationHolder = allocationSwapSummary.getRightHolder();
+
+            AID leftAllocationHolderAID = new AID(leftAllocationHolder, AID.ISGUID);
+            AID rightAllocationHolderAID = new AID(rightAllocationHolder, AID.ISGUID);
+
+            AppointmentTuple key = new AppointmentTuple(leftAllocation, rightAllocation);
             if (swappedAppointments.containsKey(key)) {
-                ArrayList<AID> swappers = swappedAppointments.get(key);
-                if (swappers.contains(ownerOldAppointment) && swappers.contains(ownerNewAppointment)) {
+                Set<AID> swappers = swappedAppointments.get(key);
+                if (swappers.contains(leftAllocation) && swappers.contains(rightAllocation)) {
                     //
-                    hospitalAgent.setAppointment(newAppointment, ownerNewAppointment);
-                    hospitalAgent.setAppointment(oldAppointment, ownerOldAppointment);
+                    hospitalAgent.setAppointment(leftAllocation, leftAllocationHolderAID);
+                    hospitalAgent.setAppointment(rightAllocation, rightAllocationHolderAID);
                 }
 
                 // remove from swappedAppointsment
                 swappedAppointments.remove(key);
             } else {
                 //add to map
-                ArrayList<AID> owners = new ArrayList<AID>();
-                owners.add(ownerOldAppointment);
-                owners.add(ownerNewAppointment);
-                swappedAppointments.put(new AppointmentTuple(oldAppointment, newAppointment), owners);
+                Set<AID> owners = new HashSet<AID>();
+                owners.add(leftAllocationHolderAID);
+                owners.add(rightAllocationHolderAID);
+                swappedAppointments.put(new AppointmentTuple(leftAllocation, rightAllocation), owners);
             }
         }
+
     }
+
 }

@@ -1,7 +1,11 @@
 package jadeCW;
 
+import jade.content.ContentElement;
+import jade.content.lang.Codec;
+import jade.content.onto.OntologyException;
 import jade.core.AID;
 import jade.core.behaviours.CyclicBehaviour;
+import jade.domain.FIPANames;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 
@@ -17,51 +21,85 @@ public class RespondToProposal2 extends CyclicBehaviour {
     @Override
     public void action() {
 
-        receiveChangeAppointmentMessage();
-    }
+        MessageTemplate messageTemplate = MessageTemplate.and(
+                MessageTemplate.MatchProtocol(FIPANames.InteractionProtocol.FIPA_PROPOSE),
+                MessageTemplate.and(
+                        MessageTemplate.MatchOntology(HospitalOntology.NAME),
+                        MessageTemplate.and(
+                                MessageTemplate.MatchLanguage(hospitalAgent.getCodec().getName()),
+                                MessageTemplate.MatchPerformative(ACLMessage.PROPOSE)
+                        )
+                )
+        );
 
-    private void receiveChangeAppointmentMessage() {
-
-        ACLMessage message = hospitalAgent.receive(MessageTemplate.MatchPerformative(ACLMessage.PROPOSE));
+        ACLMessage message = hospitalAgent.receive(messageTemplate);
 
         if (message != null) {
 
-            // get agentsAppointment, and thisAgentsAppointment
-            int senderAppointment = 0;
-            int receiverAppointment = 0;
-            if (hospitalAgent.isAppointmentFree(receiverAppointment)) {
-                // can change.
-                replyWithAcceptance(message.getSender());
+            ContentElement p = null;
+            AgentAllocationSwap agentAllocationSwap;
 
-                // update the changes
-                hospitalAgent.setAppointment(receiverAppointment, message.getSender());
+            try {
+                p = hospitalAgent.getContentManager().extractContent(message);
+            } catch (Codec.CodecException e) {
+                throw new RuntimeException(e);
+            } catch (OntologyException e) {
+                throw new RuntimeException(e);
+            }
+
+            if (p instanceof AgentAllocationSwap) {
+                agentAllocationSwap = (AgentAllocationSwap) p;
             } else {
-                // appointment has already been taken. Reject
-                String ownerOfAppointment = hospitalAgent.getAppointmentHolderID(receiverAppointment);
-                replyWithRejection(message.getSender(), ownerOfAppointment);
+                throw new RuntimeException();
+            }
+
+            if (hospitalAgent.isAppointmentFree(agentAllocationSwap.getDesiredAllocation())) {
+                // can change.
+                replyWithAcceptance(message);
+
+                hospitalAgent.setAppointment(agentAllocationSwap.getDesiredAllocation(), message.getSender());
+
+            } else {
+
+                refuseSwapProposal(message, agentAllocationSwap);
             }
         }
     }
 
-    private void replyWithAcceptance(AID receiver) {
+    private void refuseSwapProposal(ACLMessage message, AgentAllocationSwap agentAllocationSwap) {
 
-        ACLMessage acceptSwapMessage = new ACLMessage(ACLMessage.ACCEPT_PROPOSAL);
+        ACLMessage refuseSwapMessage = new ACLMessage(ACLMessage.REJECT_PROPOSAL);
+        refuseSwapMessage.setProtocol(FIPANames.InteractionProtocol.FIPA_PROPOSE);
+        refuseSwapMessage.setLanguage(hospitalAgent.getCodec().getName());
+        refuseSwapMessage.setOntology(HospitalOntology.NAME);
 
-        acceptSwapMessage.addReceiver(receiver);
-        acceptSwapMessage.setSender(hospitalAgent.getAID());
+        refuseSwapMessage.addReceiver(message.getSender());
 
-        hospitalAgent.send(acceptSwapMessage);
+        SwapAllocationUpdate swapAllocationUpdate = new SwapAllocationUpdate();
+        swapAllocationUpdate.setAllocation(agentAllocationSwap.getDesiredAllocation());
+        swapAllocationUpdate.setHolder(hospitalAgent.getAppointmentHolderID(agentAllocationSwap.getDesiredAllocation()));
+
+        try {
+            hospitalAgent.getContentManager().fillContent(refuseSwapMessage, swapAllocationUpdate);
+        } catch (Codec.CodecException e) {
+            throw new RuntimeException(e);
+        } catch (OntologyException e) {
+            throw new RuntimeException(e);
+        }
+
+        hospitalAgent.send(refuseSwapMessage);
 
     }
 
-    private void replyWithRejection(AID receiver, String holderOfAppointment) {
+    private void replyWithAcceptance(ACLMessage message) {
 
-        ACLMessage rejectSwapMessage = new ACLMessage(ACLMessage.REJECT_PROPOSAL);
+        ACLMessage acceptSwapMessage = new ACLMessage(ACLMessage.ACCEPT_PROPOSAL);
+        acceptSwapMessage.setProtocol(FIPANames.InteractionProtocol.FIPA_PROPOSE);
+        acceptSwapMessage.setLanguage(hospitalAgent.getCodec().getName());
+        acceptSwapMessage.setOntology(HospitalOntology.NAME);
+        acceptSwapMessage.addReceiver(message.getSender());
 
-        rejectSwapMessage.setContent(holderOfAppointment);
-        rejectSwapMessage.addReceiver(receiver);
-        rejectSwapMessage.setSender(hospitalAgent.getAID());
+        hospitalAgent.send(acceptSwapMessage);
 
-        hospitalAgent.send(rejectSwapMessage);
     }
 }
