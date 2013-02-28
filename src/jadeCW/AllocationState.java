@@ -26,7 +26,7 @@ public class AllocationState {
     }
 
     public String toString() {
-        return appointmentStatus + ": " + appointment + " is hold by " + appointment;
+        return appointmentStatus + ": " + appointment + " is hold by " + appointmentHolder;
     }
 
 }

@@ -8,7 +8,7 @@ public class GlobalAgentConstants {
 
     public static final String APPOINTMENT_QUERY_RESPONSE_STATUS = "appointment-query-response-status";
 
-    public static final String APPOINTMENT_QUERY_RESPONSE_STATUS_INVALID = "appointment-query-not-known";
+    public static final String APPOINTMENT_QUERY_RESPONSE_STATUS_INVALID = "appointment-query-invalid";
     public static final String APPOINTMENT_QUERY_RESPONSE_STATUS_FREE = "appointment-query-free";
     public static final String APPOINTMENT_QUERY_RESPONSE_STATUS_ALLOCATED = "appointment-query-allocated";
 

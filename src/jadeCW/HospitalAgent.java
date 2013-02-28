@@ -7,18 +7,22 @@ import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.domain.FIPAException;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.TreeMap;
+
 public class HospitalAgent extends Agent {
 
     private int appointmentsNum = GlobalAgentConstants.APPOINTMENT_NUMBERS_NOT_INITIALIZED;
-    private AID[] appointments;
+    private Map<Integer,AID> appointments = new HashMap<Integer, AID>();
 
     private AllocateAppointment allocateAppointment;
     private RespondToQuery respondToQuery;
 
     public int getFreeAppointment() {
         int freeAppointment = GlobalAgentConstants.APPOINTMENT_NUMBERS_NOT_INITIALIZED;
-        for (int i = 0; i < appointmentsNum && freeAppointment == GlobalAgentConstants.APPOINTMENT_NUMBERS_NOT_INITIALIZED; ++i) {
-            if (appointments[i] == null) {
+        for (int i = 1; i <= appointmentsNum && freeAppointment == GlobalAgentConstants.APPOINTMENT_NUMBERS_NOT_INITIALIZED; ++i) {
+            if (!appointments.containsKey(i)) {
                 freeAppointment = i;
             }
         }
@@ -27,7 +31,7 @@ public class HospitalAgent extends Agent {
     }
 
     public void setAppointment(int appointmentTime, AID patientID) {
-        appointments[appointmentTime] = patientID;
+        appointments.put(appointmentTime,patientID);
     }
 
     public int getAppointmentsNum() {
@@ -35,15 +39,11 @@ public class HospitalAgent extends Agent {
     }
 
     public boolean isAppointmentFree(int allocation) {
-        return appointments[allocation] == null;
-    }
-
-    private void initializeEmptyAppointments() {
-        appointments = new AID[appointmentsNum];
+        return !appointments.containsKey(allocation);
     }
 
     public String getAppointmentHolderID(int allocation) {
-        return appointments[allocation].getName();
+        return appointments.get(allocation).getName();
     }
 
 
@@ -51,7 +51,7 @@ public class HospitalAgent extends Agent {
         System.out.println("Initialization of hospital agent: " + getLocalName());
 
         appointmentsNum = readInAppointments();
-        initializeEmptyAppointments();
+
         registerService();
 
         allocateAppointment = new AllocateAppointment(this);
@@ -97,12 +97,12 @@ public class HospitalAgent extends Agent {
 
     protected void takeDown() {
 
-        for (int i = 0; i < appointments.length; ++i) {
+        for (int i = 1; i <= appointmentsNum; ++i) {
             String appointmentName = null;
-            if (appointments[i] != null) {
-                appointmentName = appointments[i].getLocalName();
+            if (appointments.containsKey(i)) {
+                appointmentName = appointments.get(i).getLocalName();
             }
-            System.out.println(getLocalName() + ": Appointment " + (i + 1) + ": " + appointmentName);
+            System.out.println(getLocalName() + ": Appointment " + i  + ": " + appointmentName);
         }
     }
 
