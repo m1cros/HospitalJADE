@@ -41,9 +41,11 @@ public class FindAppointmentOwner extends Behaviour {
             boolean foundPreferredAllocation = false;
 
 
+            System.out.println("Allocations tested by: " + patientAgent.getLocalName());
             while (preferredAllocationIterator.hasNext() && !foundPreferredAllocation) {
                 int preferredAllocation = preferredAllocationIterator.next();
                 /* 2. ask hospital agent who has got that preference */
+
                 queryPreferredAllocation(appointmentAgentDescription, preferredAllocation);
 
                 AllocationState allocationState = receivePreferredAllocationResponse(preferredAllocation);
@@ -51,6 +53,8 @@ public class FindAppointmentOwner extends Behaviour {
                 if (allocationState.getAppointmentStatus() == GlobalAgentConstants.APPOINTMENT_QUERY_RESPONSE_STATUS_INVALID) {
                     allocationStates.add(allocationState);
                 }
+
+                System.out.println(patientAgent.getLocalName() + ": allocation state: " + allocationState.toString());
             }
 
             patientAgent.setAllocationStates(allocationStates);

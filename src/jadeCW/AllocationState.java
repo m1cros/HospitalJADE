@@ -24,4 +24,9 @@ public class AllocationState {
     public String getAppointmentHolder() {
         return appointmentHolder;
     }
+
+    public String toString() {
+        return appointmentStatus + ": " + appointment + " is hold by " + appointment;
+    }
+
 }

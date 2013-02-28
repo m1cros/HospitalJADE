@@ -20,6 +20,8 @@ public class RespondToQuery extends CyclicBehaviour {
             String queryAllocation = message.getUserDefinedParameter(GlobalAgentConstants.APPOINTMENT_QUERY_FIELD);
             int allocation = Integer.parseInt(queryAllocation);
 
+            System.out.println("Got query in hospital");
+
             ACLMessage messageResponse = new ACLMessage(ACLMessage.QUERY_REF);
             messageResponse.setSender(hospitalAgent.getAID());
             messageResponse.addReceiver(message.getSender());
@@ -48,7 +50,7 @@ public class RespondToQuery extends CyclicBehaviour {
 
             }
 
-            hospitalAgent.send(message);
+            hospitalAgent.send(messageResponse);
         }
 
     }
