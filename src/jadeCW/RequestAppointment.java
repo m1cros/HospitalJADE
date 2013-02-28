@@ -3,6 +3,7 @@ package jadeCW;
 import jade.core.behaviours.Behaviour;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.lang.acl.ACLMessage;
+import jade.lang.acl.MessageTemplate;
 
 public class RequestAppointment extends Behaviour {
 
@@ -20,7 +21,7 @@ public class RequestAppointment extends Behaviour {
         // finding agent for appointment-service
         DFAgentDescription appointmentAgentDescription = dfSubscription.getAgentDescription();
 
-        if(appointmentAgentDescription != null) {
+        if (appointmentAgentDescription != null) {
             // appointment-service agent can allocate appointment
 
             //Check that this agent (i.e. the parent agent of this behaviour) has not already been allocated an appointment
@@ -44,18 +45,15 @@ public class RequestAppointment extends Behaviour {
 
     private void receiveResponse() {
 
-        ACLMessage message = patientAgent.blockingReceive();
+        ACLMessage message = patientAgent.blockingReceive(MessageTemplate.MatchPerformative(ACLMessage.PROPOSE));
 
-        if(message.getPerformative() == ACLMessage.PROPOSE) {
-            int currentAllocation = Integer.parseInt(message.getContent());
+        int currentAllocation = Integer.parseInt(message.getContent());
 
-            patientAgent.setCurrentAllocation(currentAllocation);
-            isAllocated = true;
-        }
+        patientAgent.setCurrentAllocation(currentAllocation);
+        isAllocated = true;
     }
 
     private void confirmAppointment(ACLMessage message) {
-
 
 
     }

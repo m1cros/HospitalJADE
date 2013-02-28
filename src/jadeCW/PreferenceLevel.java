@@ -1,5 +1,6 @@
 package jadeCW;
 
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -15,4 +16,15 @@ public class PreferenceLevel {
         }
     }
 
+    public boolean addPreferredAllocations(int currentAllocation, List<Integer> preferredAllocations) {
+
+        boolean hasPreferredAllocations = appointmentsId.contains(currentAllocation);
+
+        if(!hasPreferredAllocations) {
+            preferredAllocations.addAll(appointmentsId);
+        }
+
+        return hasPreferredAllocations;
+
+    }
 }

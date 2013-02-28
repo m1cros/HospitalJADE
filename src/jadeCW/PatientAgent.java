@@ -6,6 +6,9 @@ import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.SearchConstraints;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class PatientAgent extends Agent {
 
     private PatientPreference patientPreference;
@@ -13,12 +16,22 @@ public class PatientAgent extends Agent {
     private RequestAppointment requestAppointmentBehaviour;
     private int currentAllocation = GlobalAgentConstants.APPOINTMENT_UNINITIALIZED;
 
+    List<AllocationState> allocationStates = new ArrayList<AllocationState>();
+
     public int getCurrentAllocation() {
         return currentAllocation;
     }
 
     public void setCurrentAllocation(int currentAllocation) {
         this.currentAllocation = currentAllocation;
+    }
+
+    public List<AllocationState> getAllocationStates() {
+        return allocationStates;
+    }
+
+    public void setAllocationStates(List<AllocationState> allocationStates) {
+        this.allocationStates = allocationStates;
     }
 
     protected void setup() {
@@ -65,7 +78,7 @@ public class PatientAgent extends Agent {
     protected void takeDown() {
         Integer allocation = null;
         if (currentAllocation != GlobalAgentConstants.APPOINTMENT_UNINITIALIZED) {
-            allocation = currentAllocation+1;
+            allocation = currentAllocation + 1;
         }
         System.out.println(getLocalName() + ": " + allocation);
     }

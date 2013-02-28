@@ -1,6 +1,7 @@
 package jadeCW;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 public class PatientPreference {
@@ -25,4 +26,19 @@ public class PatientPreference {
     }
 
 
+    public List<Integer> queryPreferredAllocations(int currentAllocation) {
+
+        List<Integer> preferredAllocations = new ArrayList<Integer>();
+        Iterator<PreferenceLevel> preferenceLevelIterator = preferenceLevels.iterator();
+        boolean foundCurrentAllocationPosition = false;
+
+        while(!foundCurrentAllocationPosition && preferenceLevelIterator.hasNext()) {
+
+            PreferenceLevel preferenceLevel = preferenceLevelIterator.next();
+            foundCurrentAllocationPosition = preferenceLevel.addPreferredAllocations(currentAllocation,preferredAllocations);
+
+        }
+
+        return preferredAllocations;
+    }
 }
