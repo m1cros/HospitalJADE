@@ -31,4 +31,8 @@ public class AppointmentQuery implements Predicate
     public void setHolder(String holder) {
         this.holder = holder;
     }
+
+    public String toString() {
+        return "Allocation: " + allocation + " holder " + holder;
+    }
 }
