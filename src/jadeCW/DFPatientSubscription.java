@@ -34,8 +34,6 @@ public class DFPatientSubscription extends SubscriptionInitiator {
 
     protected synchronized void handleInform(ACLMessage inform) {
 
-        System.out.println("Handling information: " + inform.toString());
-
         try {
             DFAgentDescription[] results = DFService.decodeNotification(inform.getContent());
             if (results.length > 0) {

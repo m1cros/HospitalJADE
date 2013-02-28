@@ -14,40 +14,42 @@ public class RespondToQuery extends CyclicBehaviour {
 
     @Override
     public void action() {
-        ACLMessage message = hospitalAgent.blockingReceive(MessageTemplate.MatchPerformative(ACLMessage.QUERY_IF));
+        ACLMessage message = hospitalAgent.receive(MessageTemplate.MatchPerformative(ACLMessage.QUERY_IF));
 
-        String queryAllocation = message.getUserDefinedParameter(GlobalAgentConstants.APPOINTMENT_QUERY_FIELD);
-        int allocation = Integer.parseInt(queryAllocation);
+        if (message != null) {
+            String queryAllocation = message.getUserDefinedParameter(GlobalAgentConstants.APPOINTMENT_QUERY_FIELD);
+            int allocation = Integer.parseInt(queryAllocation);
 
-        ACLMessage messageResponse = new ACLMessage(ACLMessage.QUERY_REF);
-        messageResponse.setSender(hospitalAgent.getAID());
-        messageResponse.addReceiver(message.getSender());
+            ACLMessage messageResponse = new ACLMessage(ACLMessage.QUERY_REF);
+            messageResponse.setSender(hospitalAgent.getAID());
+            messageResponse.addReceiver(message.getSender());
 
-        if(allocation < 0 || allocation >= hospitalAgent.getAppointmentsNum()) {
+            if (allocation < 0 || allocation >= hospitalAgent.getAppointmentsNum()) {
 
-            messageResponse.addUserDefinedParameter(
-                    GlobalAgentConstants.APPOINTMENT_QUERY_RESPONSE_STATUS,
-                    GlobalAgentConstants.APPOINTMENT_QUERY_RESPONSE_STATUS_INVALID);
+                messageResponse.addUserDefinedParameter(
+                        GlobalAgentConstants.APPOINTMENT_QUERY_RESPONSE_STATUS,
+                        GlobalAgentConstants.APPOINTMENT_QUERY_RESPONSE_STATUS_INVALID);
 
-        } else if(hospitalAgent.isAppointmentFree(allocation)) {
+            } else if (hospitalAgent.isAppointmentFree(allocation)) {
 
-            messageResponse.addUserDefinedParameter(
-                    GlobalAgentConstants.APPOINTMENT_QUERY_RESPONSE_STATUS,
-                    GlobalAgentConstants.APPOINTMENT_QUERY_RESPONSE_STATUS_FREE);
+                messageResponse.addUserDefinedParameter(
+                        GlobalAgentConstants.APPOINTMENT_QUERY_RESPONSE_STATUS,
+                        GlobalAgentConstants.APPOINTMENT_QUERY_RESPONSE_STATUS_FREE);
 
-        } else {
+            } else {
 
-            messageResponse.addUserDefinedParameter(
-                GlobalAgentConstants.APPOINTMENT_QUERY_RESPONSE_STATUS,
-                GlobalAgentConstants.APPOINTMENT_QUERY_RESPONSE_STATUS_ALLOCATED);
+                messageResponse.addUserDefinedParameter(
+                        GlobalAgentConstants.APPOINTMENT_QUERY_RESPONSE_STATUS,
+                        GlobalAgentConstants.APPOINTMENT_QUERY_RESPONSE_STATUS_ALLOCATED);
 
-            messageResponse.addUserDefinedParameter(
-                GlobalAgentConstants.APPOINTMENT_QUERY_RESPONSE_AGENT_ID,
-                hospitalAgent.getAppointmentHolderID(allocation));
+                messageResponse.addUserDefinedParameter(
+                        GlobalAgentConstants.APPOINTMENT_QUERY_RESPONSE_AGENT_ID,
+                        hospitalAgent.getAppointmentHolderID(allocation));
 
+            }
+
+            hospitalAgent.send(message);
         }
-
-        hospitalAgent.send(message);
 
     }
 

@@ -16,17 +16,19 @@ public class AllocateAppointment extends CyclicBehaviour {
     @Override
     public void action() {
 
-        ACLMessage message = hospitalAgent.blockingReceive(MessageTemplate.MatchPerformative(ACLMessage.REQUEST));
+        ACLMessage message = hospitalAgent.receive(MessageTemplate.MatchPerformative(ACLMessage.REQUEST));
 
-        int freeAppointment = hospitalAgent.getFreeAppointment();
+        if (message != null) {
+            int freeAppointment = hospitalAgent.getFreeAppointment();
 
-        AID sender = message.getSender();
-        if (freeAppointment != GlobalAgentConstants.APPOINTMENT_NUMBERS_NOT_INITIALIZED) {
-            hospitalAgent.setAppointment(freeAppointment, sender);
+            AID sender = message.getSender();
+            if (freeAppointment != GlobalAgentConstants.APPOINTMENT_NUMBERS_NOT_INITIALIZED) {
+                hospitalAgent.setAppointment(freeAppointment, sender);
 
-            proposeAppointment(sender, freeAppointment);
-        } else {
-            refuseAppointment(sender);
+                proposeAppointment(sender, freeAppointment);
+            } else {
+                refuseAppointment(sender);
+            }
         }
 
     }

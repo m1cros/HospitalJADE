@@ -2,6 +2,7 @@ package jadeCW;
 
 import jade.core.behaviours.Behaviour;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
+import jade.domain.introspection.ReceivedMessage;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 
@@ -59,7 +60,6 @@ public class RequestAppointment extends Behaviour {
 
             isAllocated = true;
         }
-
     }
 
     @Override
