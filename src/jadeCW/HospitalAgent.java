@@ -11,12 +11,14 @@ public class HospitalAgent extends Agent {
 
     private int appointmentsNum = GlobalAgentConstants.APPOINTMENT_NUMBERS_NOT_INITIALIZED;
     private AID[] appointments;
+
     private AllocateAppointment allocateAppointment;
+    private RespondToQuery respondToQuery;
 
     public int getFreeAppointment() {
         int freeAppointment = GlobalAgentConstants.APPOINTMENT_NUMBERS_NOT_INITIALIZED;
-        for(int i = 0;i < appointmentsNum && freeAppointment == GlobalAgentConstants.APPOINTMENT_NUMBERS_NOT_INITIALIZED;++i) {
-            if(appointments[i] == null) {
+        for (int i = 0; i < appointmentsNum && freeAppointment == GlobalAgentConstants.APPOINTMENT_NUMBERS_NOT_INITIALIZED; ++i) {
+            if (appointments[i] == null) {
                 freeAppointment = i;
             }
         }
@@ -28,6 +30,23 @@ public class HospitalAgent extends Agent {
         appointments[appointmentTime] = patientID;
     }
 
+    public int getAppointmentsNum() {
+        return appointmentsNum;
+    }
+
+    public boolean isAppointmentFree(int allocation) {
+        return appointments[allocation] == null;
+    }
+
+    private void initializeEmptyAppointments() {
+        appointments = new AID[appointmentsNum];
+    }
+
+    public String getAppointmentHolderID(int allocation) {
+        return appointments[allocation].getName();
+    }
+
+
     protected void setup() {
         System.out.println("Initialization of hospital agent: " + getLocalName());
 
@@ -36,12 +55,12 @@ public class HospitalAgent extends Agent {
         registerService();
 
         allocateAppointment = new AllocateAppointment(this);
+        respondToQuery = new RespondToQuery(this);
+
         addBehaviour(allocateAppointment);
+        addBehaviour(respondToQuery);
     }
 
-    private void initializeEmptyAppointments() {
-        appointments = new AID[appointmentsNum];
-    }
 
     private void registerService() {
 
@@ -76,9 +95,9 @@ public class HospitalAgent extends Agent {
 
     protected void takeDown() {
 
-        for(int i = 0;i < appointments.length;++i) {
+        for (int i = 0; i < appointments.length; ++i) {
             String appointmentName = null;
-            if(appointments[i] != null) {
+            if (appointments[i] != null) {
                 appointmentName = appointments[i].getLocalName();
             }
             System.out.println(getLocalName() + ": Appointment " + (i + 1) + ": " + appointmentName);

@@ -56,6 +56,7 @@ public class FindAppointmentOwner extends Behaviour {
 
     private void queryPreferredAllocation(DFAgentDescription appointmentAgentDescription, int preferredAllocation) {
         ACLMessage allocationQueryMessage = new ACLMessage(ACLMessage.QUERY_REF);
+        allocationQueryMessage.setSender(patientAgent.getAID());
         allocationQueryMessage.addReceiver(appointmentAgentDescription.getName());
         allocationQueryMessage.addUserDefinedParameter(GlobalAgentConstants.APPOINTMENT_QUERY_FIELD, preferredAllocation + "");
 

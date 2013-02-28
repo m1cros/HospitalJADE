@@ -14,6 +14,7 @@ public class PatientAgent extends Agent {
     private PatientPreference patientPreference;
     private DFPatientSubscription dfSubscription;
     private RequestAppointment requestAppointmentBehaviour;
+    private FindAppointmentOwner findAppointmentOwner;
     private int currentAllocation = GlobalAgentConstants.APPOINTMENT_UNINITIALIZED;
 
     List<AllocationState> allocationStates = new ArrayList<AllocationState>();
@@ -45,7 +46,10 @@ public class PatientAgent extends Agent {
     private void addPatientBehaviour() {
 
         requestAppointmentBehaviour = new RequestAppointment(dfSubscription, this);
+        findAppointmentOwner = new FindAppointmentOwner(dfSubscription, this, patientPreference);
+
         addBehaviour(requestAppointmentBehaviour);
+        addBehaviour(findAppointmentOwner);
 
     }
 

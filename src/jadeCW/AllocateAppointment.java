@@ -3,6 +3,7 @@ package jadeCW;
 import jade.core.AID;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
+import jade.lang.acl.MessageTemplate;
 
 public class AllocateAppointment extends CyclicBehaviour {
 
@@ -15,19 +16,17 @@ public class AllocateAppointment extends CyclicBehaviour {
     @Override
     public void action() {
 
-        ACLMessage message = hospitalAgent.blockingReceive();
+        ACLMessage message = hospitalAgent.blockingReceive(MessageTemplate.MatchPerformative(ACLMessage.REQUEST));
 
-        if(message.getPerformative() == ACLMessage.REQUEST) {
-            int freeAppointment = hospitalAgent.getFreeAppointment();
+        int freeAppointment = hospitalAgent.getFreeAppointment();
 
-            AID sender = message.getSender();
-            if(freeAppointment != GlobalAgentConstants.APPOINTMENT_NUMBERS_NOT_INITIALIZED) {
-                hospitalAgent.setAppointment(freeAppointment,sender);
+        AID sender = message.getSender();
+        if (freeAppointment != GlobalAgentConstants.APPOINTMENT_NUMBERS_NOT_INITIALIZED) {
+            hospitalAgent.setAppointment(freeAppointment, sender);
 
-                proposeAppointment(sender,freeAppointment);
-            } else {
-                refuseAppointment(sender);
-            }
+            proposeAppointment(sender, freeAppointment);
+        } else {
+            refuseAppointment(sender);
         }
 
     }
