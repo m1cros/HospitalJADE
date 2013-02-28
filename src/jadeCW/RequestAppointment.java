@@ -38,6 +38,7 @@ public class RequestAppointment extends Behaviour {
 
         ACLMessage appointmentRequestMessage = new ACLMessage(ACLMessage.REQUEST);
         appointmentRequestMessage.addReceiver(appointmentAgentDescription.getName());
+        appointmentRequestMessage.setSender(patientAgent.getAID());
 
         patientAgent.send(appointmentRequestMessage);
 
@@ -45,16 +46,19 @@ public class RequestAppointment extends Behaviour {
 
     private void receiveResponse() {
 
-        ACLMessage message = patientAgent.blockingReceive(MessageTemplate.MatchPerformative(ACLMessage.PROPOSE));
+        MessageTemplate messageTemplate = MessageTemplate.or(
+                MessageTemplate.MatchPerformative(ACLMessage.PROPOSE),
+                MessageTemplate.MatchPerformative(ACLMessage.REFUSE));
 
-        int currentAllocation = Integer.parseInt(message.getContent());
+        ACLMessage message = patientAgent.blockingReceive(messageTemplate);
 
-        patientAgent.setCurrentAllocation(currentAllocation);
-        isAllocated = true;
-    }
+        if(message.getPerformative() == ACLMessage.PROPOSE) {
+            int currentAllocation = Integer.parseInt(message.getContent());
 
-    private void confirmAppointment(ACLMessage message) {
+            patientAgent.setCurrentAllocation(currentAllocation);
 
+            isAllocated = true;
+        }
 
     }
 

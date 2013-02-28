@@ -14,12 +14,12 @@ public class RespondToQuery extends CyclicBehaviour {
 
     @Override
     public void action() {
-        ACLMessage message = hospitalAgent.blockingReceive(MessageTemplate.MatchPerformative(ACLMessage.QUERY_REF));
+        ACLMessage message = hospitalAgent.blockingReceive(MessageTemplate.MatchPerformative(ACLMessage.QUERY_IF));
 
         String queryAllocation = message.getUserDefinedParameter(GlobalAgentConstants.APPOINTMENT_QUERY_FIELD);
         int allocation = Integer.parseInt(queryAllocation);
 
-        ACLMessage messageResponse = new ACLMessage(ACLMessage.INFORM_REF);
+        ACLMessage messageResponse = new ACLMessage(ACLMessage.QUERY_REF);
         messageResponse.setSender(hospitalAgent.getAID());
         messageResponse.addReceiver(message.getSender());
 

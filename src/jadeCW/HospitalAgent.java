@@ -59,6 +59,8 @@ public class HospitalAgent extends Agent {
 
         addBehaviour(allocateAppointment);
         addBehaviour(respondToQuery);
+
+        System.out.println("Finished initialization of hospital agent: " + getLocalName());
     }
 
 

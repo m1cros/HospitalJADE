@@ -27,35 +27,40 @@ public class FindAppointmentOwner extends Behaviour {
 
     @Override
     public void action() {
-        int currentAllocation = patientAgent.getCurrentAllocation();
-        List<AllocationState> allocationStates = new ArrayList<AllocationState>();
-
-        /* 1. query patient preference for better appointment - patient could have no appointment? */
-        List<Integer> preferredAllocationsOverCurrent = patientPreference.queryPreferredAllocations(currentAllocation);
-        Iterator<Integer> preferredAllocationIterator = preferredAllocationsOverCurrent.iterator();
-        boolean foundPreferredAllocation = false;
-
         /* Hospital agent */
         DFAgentDescription appointmentAgentDescription = dfSubscription.getAgentDescription();
 
-        while (preferredAllocationIterator.hasNext() && !foundPreferredAllocation) {
-            int preferredAllocation = preferredAllocationIterator.next();
-            /* 2. ask hospital agent who has got that preference */
-            queryPreferredAllocation(appointmentAgentDescription, preferredAllocation);
+        if (appointmentAgentDescription != null) {
 
-            AllocationState allocationState = receivePreferredAllocationResponse(preferredAllocation);
+            int currentAllocation = patientAgent.getCurrentAllocation();
+            List<AllocationState> allocationStates = new ArrayList<AllocationState>();
 
-            if(allocationState.getAppointmentStatus() == GlobalAgentConstants.APPOINTMENT_QUERY_RESPONSE_STATUS_INVALID) {
-                allocationStates.add(allocationState);
+            /* 1. query patient preference for better appointment - patient could have no appointment? */
+            List<Integer> preferredAllocationsOverCurrent = patientPreference.queryPreferredAllocations(currentAllocation);
+            Iterator<Integer> preferredAllocationIterator = preferredAllocationsOverCurrent.iterator();
+            boolean foundPreferredAllocation = false;
+
+
+            while (preferredAllocationIterator.hasNext() && !foundPreferredAllocation) {
+                int preferredAllocation = preferredAllocationIterator.next();
+                /* 2. ask hospital agent who has got that preference */
+                queryPreferredAllocation(appointmentAgentDescription, preferredAllocation);
+
+                AllocationState allocationState = receivePreferredAllocationResponse(preferredAllocation);
+
+                if (allocationState.getAppointmentStatus() == GlobalAgentConstants.APPOINTMENT_QUERY_RESPONSE_STATUS_INVALID) {
+                    allocationStates.add(allocationState);
+                }
             }
-        }
 
-        patientAgent.setAllocationStates(allocationStates);
-        allocationStatesSet = true;
+            patientAgent.setAllocationStates(allocationStates);
+            allocationStatesSet = true;
+
+        }
     }
 
     private void queryPreferredAllocation(DFAgentDescription appointmentAgentDescription, int preferredAllocation) {
-        ACLMessage allocationQueryMessage = new ACLMessage(ACLMessage.QUERY_REF);
+        ACLMessage allocationQueryMessage = new ACLMessage(ACLMessage.QUERY_IF);
         allocationQueryMessage.setSender(patientAgent.getAID());
         allocationQueryMessage.addReceiver(appointmentAgentDescription.getName());
         allocationQueryMessage.addUserDefinedParameter(GlobalAgentConstants.APPOINTMENT_QUERY_FIELD, preferredAllocation + "");
@@ -65,17 +70,17 @@ public class FindAppointmentOwner extends Behaviour {
 
     private AllocationState receivePreferredAllocationResponse(int preferredAllocation) {
         /* receiving response... */
+        ACLMessage allocationQueryResponseMessage = patientAgent.blockingReceive(MessageTemplate.MatchPerformative(ACLMessage.QUERY_REF));
 
-        ACLMessage allocationQueryResponseMessage = patientAgent.blockingReceive(MessageTemplate.MatchPerformative(ACLMessage.INFORM_REF));
         String responseStatus = allocationQueryResponseMessage.getUserDefinedParameter(GlobalAgentConstants.APPOINTMENT_QUERY_RESPONSE_STATUS);
         String patientAgentHolding = null;
 
-        if(responseStatus.equals(GlobalAgentConstants.APPOINTMENT_QUERY_RESPONSE_STATUS_ALLOCATED)) {
+        if (responseStatus.equals(GlobalAgentConstants.APPOINTMENT_QUERY_RESPONSE_STATUS_ALLOCATED)) {
             /* Allocated appointment */
             patientAgentHolding = allocationQueryResponseMessage.getUserDefinedParameter(GlobalAgentConstants.APPOINTMENT_QUERY_RESPONSE_AGENT_ID);
         }
 
-        AllocationState allocatedState = new AllocationState(preferredAllocation,responseStatus,patientAgentHolding);
+        AllocationState allocatedState = new AllocationState(preferredAllocation, responseStatus, patientAgentHolding);
 
         return allocatedState;
     }

@@ -23,20 +23,18 @@ public class DFPatientSubscription extends SubscriptionInitiator {
 
     public synchronized DFAgentDescription getAgentDescription() {
 
-        while(allocateApptsAgents.isEmpty()) {
-            try {
-                wait();
-            } catch (InterruptedException e) {
-                new RuntimeException(e);
-            }
+        if(!allocateApptsAgents.isEmpty()) {
+            return allocateApptsAgents.get(0);
+        } else {
+            return null;
         }
-
-        return allocateApptsAgents.get(0);
 
     }
 
 
     protected synchronized void handleInform(ACLMessage inform) {
+
+        System.out.println("Handling information: " + inform.toString());
 
         try {
             DFAgentDescription[] results = DFService.decodeNotification(inform.getContent());
@@ -62,7 +60,6 @@ public class DFPatientSubscription extends SubscriptionInitiator {
             throw new ServiceRegistrationException(fe);
         }
 
-        notifyAll();
     }
 
 }

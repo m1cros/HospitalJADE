@@ -42,6 +42,8 @@ public class PatientAgent extends Agent {
         subscribeToDFAgents();
 
         addPatientBehaviour();
+
+        System.out.println("Finished initialization of patient agent: " + getLocalName());
     }
 
     private void addPatientBehaviour() {
