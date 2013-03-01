@@ -18,9 +18,6 @@ public class HospitalAgent extends Agent {
     private int appointmentsNum = GlobalAgentConstants.APPOINTMENT_NUMBERS_NOT_INITIALIZED;
     private Map<Integer,AID> appointments = new HashMap<Integer, AID>();
 
-    private AllocateAppointment allocateAppointment;
-    private RespondToQuery respondToQuery;
-
     private final ContentManager contentManager = (ContentManager)getContentManager();
     private final Codec codec = new SLCodec();
 
@@ -66,13 +63,21 @@ public class HospitalAgent extends Agent {
 
         registerService();
 
-        allocateAppointment = new AllocateAppointment(this);
-        respondToQuery = new RespondToQuery(this);
+        addHospitalBehaviours();
+
+        System.out.println("Finished initialization of hospital agent: " + getLocalName());
+    }
+
+    private void addHospitalBehaviours() {
+        AllocateAppointment allocateAppointment = new AllocateAppointment(this);
+        RespondToQuery respondToQuery = new RespondToQuery(this);
+        RespondToProposal2 respondToProposal2 = new RespondToProposal2(this);
+        UpdateAppointments updateAppointments = new UpdateAppointments(this);
 
         addBehaviour(allocateAppointment);
         addBehaviour(respondToQuery);
-
-        System.out.println("Finished initialization of hospital agent: " + getLocalName());
+        addBehaviour(respondToProposal2);
+        addBehaviour(updateAppointments);
     }
 
 

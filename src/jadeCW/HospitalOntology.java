@@ -27,8 +27,6 @@ public class HospitalOntology extends Ontology {
     public static final String APPOINTMENT_SWAP_REQUEST_DESIRED_ALLOCATION = "desiredAllocation";
 
     public static final String SWAP_ALLOCATION_UPDATE = "SWAP_ALLOCATION_UPDATE";
-    public static final String SWAP_ALLOCATION_UPDATE_HOLDER = "SWAP_ALLOCATION_HOLDER";
-    public static final String SWAP_ALLOCATION_UPDATE_ALLOCATION = "SWAP_ALLOCATION_UPDATE_ALLOCATION";
 
     public static final String ALLOCATION_SWAP_SUMMARY = "ALLOCATION_SWAP_SUMMARY";
     public static final String ALLOCATION_SWAP_SUMMARY_LEFT_ALLOCATION = "leftAllocation";
@@ -69,8 +67,8 @@ public class HospitalOntology extends Ontology {
             add(appointmentSwapRequestSchema, AgentAllocationSwap.class);
 
             PredicateSchema swapAllocationUpdateSchema = new PredicateSchema(SWAP_ALLOCATION_UPDATE);
-            swapAllocationUpdateSchema.add(SWAP_ALLOCATION_UPDATE_HOLDER, stringSchema, ObjectSchema.MANDATORY);
-            swapAllocationUpdateSchema.add(SWAP_ALLOCATION_UPDATE_ALLOCATION, integerSchema, ObjectSchema.MANDATORY);
+            swapAllocationUpdateSchema.add(APPOINTMENT_QUERY_HOLDER, stringSchema, ObjectSchema.MANDATORY);
+            swapAllocationUpdateSchema.add(APPOINTMENT_QUERY_TIME, integerSchema, ObjectSchema.MANDATORY);
             add(swapAllocationUpdateSchema, SwapAllocationUpdate.class);
 
             PredicateSchema allocationSwapSummary = new PredicateSchema(ALLOCATION_SWAP_SUMMARY);

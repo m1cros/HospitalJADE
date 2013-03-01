@@ -18,8 +18,6 @@ public class PatientAgent extends Agent {
     private PatientPreference patientPreference;
     private AllocationFinder allocationFinder;
     private DFPatientSubscription dfSubscription;
-    private RequestAppointment requestAppointmentBehaviour;
-    private FindAppointmentOwner findAppointmentOwner;
     private int currentAllocation = GlobalAgentConstants.APPOINTMENT_UNINITIALIZED;
 
     private final ContentManager contentManager = (ContentManager)getContentManager();
@@ -66,18 +64,22 @@ public class PatientAgent extends Agent {
 
         allocationFinder = new AllocationFinder(this);
 
-        addPatientBehaviour();
+        addPatientBehaviours();
 
         System.out.println("Finished initialization of patient agent: " + getLocalName());
     }
 
-    private void addPatientBehaviour() {
+    private void addPatientBehaviours() {
 
-        requestAppointmentBehaviour = new RequestAppointment(dfSubscription, this);
-        findAppointmentOwner = new FindAppointmentOwner(dfSubscription, this);
+        RequestAppointment requestAppointmentBehaviour = new RequestAppointment(dfSubscription, this);
+        FindAppointmentOwner findAppointmentOwner = new FindAppointmentOwner(dfSubscription, this);
+        ProposeSwap proposeSwapBehaviour = new ProposeSwap(dfSubscription, this);
+        RespondToProposal1 respondToProposal1 = new RespondToProposal1(dfSubscription, this);
 
         addBehaviour(requestAppointmentBehaviour);
         addBehaviour(findAppointmentOwner);
+        addBehaviour(proposeSwapBehaviour);
+        addBehaviour(respondToProposal1);
 
     }
 
