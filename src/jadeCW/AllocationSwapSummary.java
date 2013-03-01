@@ -41,5 +41,12 @@ public class AllocationSwapSummary implements Predicate {
         this.proposingAgentOldAppointment = proposingAgentOldAppointment;
     }
 
+    public String toString() {
+        return "proposing agent: " + proposingAgent +
+                " proposing agent old appointment: " + proposingAgentOldAppointment +
+                " receiving agent: " + receivingAgent +
+                " receiving agent old appointment: " + receivingAgentOldAppointment;
+    }
+
 }
 

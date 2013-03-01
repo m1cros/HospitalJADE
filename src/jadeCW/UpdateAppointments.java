@@ -56,8 +56,11 @@ public class UpdateAppointments extends CyclicBehaviour {
             if (p instanceof AllocationSwapSummary) {
                 allocationSwapSummary = (AllocationSwapSummary) p;
             } else {
-                throw new RuntimeException();
+                return;
             }
+
+            System.out.println("Received update message : " + message);
+            System.out.println("With summary: " + allocationSwapSummary);
 
             int proposingAgentOldAppointment = allocationSwapSummary.getProposingAgentOldAppointment();
             int receivingAgentOldAppointment = allocationSwapSummary.getReceivingAgentOldAppointment();
@@ -74,6 +77,7 @@ public class UpdateAppointments extends CyclicBehaviour {
                 if (swappers.contains(proposingAgentOldAppointment)
                         && swappers.contains(receivingAgentOldAppointment)) {
                     // we received both confirmations, update appointment table
+                    System.out.println("Swapping!");
                     hospitalAgent.setAppointment(receivingAgentOldAppointment, proposingAgentAID);
                     hospitalAgent.setAppointment(proposingAgentOldAppointment, receivingAgentAID);
                     swappedAppointments.remove(key);

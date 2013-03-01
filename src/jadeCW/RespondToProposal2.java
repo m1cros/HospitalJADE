@@ -68,15 +68,15 @@ public class RespondToProposal2 extends CyclicBehaviour {
         refuseSwapMessage.setProtocol(FIPANames.InteractionProtocol.FIPA_PROPOSE);
         refuseSwapMessage.setLanguage(hospitalAgent.getCodec().getName());
         refuseSwapMessage.setOntology(HospitalOntology.NAME);
-
         refuseSwapMessage.addReceiver(message.getSender());
 
-        SwapAllocationUpdate swapAllocationUpdate = new SwapAllocationUpdate();
-        swapAllocationUpdate.setAllocation(agentAllocationSwap.getDesiredAllocation());
-        swapAllocationUpdate.setHolder(hospitalAgent.getAppointmentHolderID(agentAllocationSwap.getDesiredAllocation()));
+        AppointmentQuery appointment = new AppointmentQuery();
+        appointment.setAllocation(agentAllocationSwap.getDesiredAllocation());
+        appointment.setState(GlobalAgentConstants.APPOINTMENT_QUERY_RESPONSE_STATUS_ALLOCATED);
+        appointment.setHolder(hospitalAgent.getAppointmentHolderID(agentAllocationSwap.getDesiredAllocation()));
 
         try {
-            hospitalAgent.getContentManager().fillContent(refuseSwapMessage, swapAllocationUpdate);
+            hospitalAgent.getContentManager().fillContent(refuseSwapMessage, appointment);
         } catch (Codec.CodecException e) {
             throw new RuntimeException(e);
         } catch (OntologyException e) {

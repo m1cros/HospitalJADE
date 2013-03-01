@@ -3,7 +3,6 @@ package jadeCW;
 import jade.content.onto.BasicOntology;
 import jade.content.onto.Ontology;
 import jade.content.onto.OntologyException;
-import jade.content.schema.ConceptSchema;
 import jade.content.schema.ObjectSchema;
 import jade.content.schema.PredicateSchema;
 import jade.content.schema.PrimitiveSchema;
@@ -26,13 +25,16 @@ public class HospitalOntology extends Ontology {
     public static final String APPOINTMENT_SWAP_REQUEST_CURRENT_ALLOCATION = "currentAllocation";
     public static final String APPOINTMENT_SWAP_REQUEST_DESIRED_ALLOCATION = "desiredAllocation";
 
-    public static final String SWAP_ALLOCATION_UPDATE = "SWAP_ALLOCATION_UPDATE";
-
     public static final String ALLOCATION_SWAP_SUMMARY = "ALLOCATION_SWAP_SUMMARY";
     public static final String ALLOCATION_SWAP_SUMMARY_PROPOSING_APPOINTMENT = "proposingAgentOldAppointment";
     public static final String ALLOCATION_SWAP_SUMMARY_PROPOSING_AGENT = "proposingAgent";
     public static final String ALLOCATION_SWAP_SUMMARY_RECEIVING_APPOINTMENT = "receivingAgentOldAppointment";
     public static final String ALLOCATION_SWAP_SUMMARY_RECEIVING_AGENT = "receivingAgent";
+
+    public static final String APPOINTMENT_NOT_IN_POSSESSION = "APPOINTMENT_NOT_IN_POSSESSION";
+    public static final String APPOINTMENT_NOT_IN_POSSESSION_CUR_APP = "currentAppointment";
+
+    public static final String APPOINTMENT_NOT_PREFERRED = "APPOINTMENT_NOT_PREFERRED";
 
     private static Ontology theInstance = new HospitalOntology();
 
@@ -52,7 +54,6 @@ public class HospitalOntology extends Ontology {
 
             PredicateSchema appointmentSchema = new PredicateSchema(APPOINTMENT);
             appointmentSchema.add(ALLOCATION, integerSchema, ObjectSchema.MANDATORY);
-
             add(appointmentSchema, Appointment.class);
 
             PredicateSchema appointmentQuerySchema = new PredicateSchema(APPOINTMENT_QUERY);
@@ -66,11 +67,6 @@ public class HospitalOntology extends Ontology {
             appointmentSwapRequestSchema.add(APPOINTMENT_SWAP_REQUEST_DESIRED_ALLOCATION, integerSchema, ObjectSchema.MANDATORY);
             add(appointmentSwapRequestSchema, AgentAllocationSwap.class);
 
-            PredicateSchema swapAllocationUpdateSchema = new PredicateSchema(SWAP_ALLOCATION_UPDATE);
-            swapAllocationUpdateSchema.add(APPOINTMENT_QUERY_HOLDER, stringSchema, ObjectSchema.MANDATORY);
-            swapAllocationUpdateSchema.add(APPOINTMENT_QUERY_TIME, integerSchema, ObjectSchema.MANDATORY);
-            add(swapAllocationUpdateSchema, SwapAllocationUpdate.class);
-
             PredicateSchema allocationSwapSummary = new PredicateSchema(ALLOCATION_SWAP_SUMMARY);
             allocationSwapSummary.add(ALLOCATION_SWAP_SUMMARY_PROPOSING_APPOINTMENT, integerSchema, ObjectSchema.MANDATORY);
             allocationSwapSummary.add(ALLOCATION_SWAP_SUMMARY_PROPOSING_AGENT, stringSchema, ObjectSchema.MANDATORY);
@@ -78,6 +74,12 @@ public class HospitalOntology extends Ontology {
             allocationSwapSummary.add(ALLOCATION_SWAP_SUMMARY_RECEIVING_AGENT, stringSchema, ObjectSchema.MANDATORY);
             add(allocationSwapSummary,AllocationSwapSummary.class);
 
+            PredicateSchema appointmentNotInPossession = new PredicateSchema(APPOINTMENT_NOT_IN_POSSESSION);
+            appointmentNotInPossession.add(APPOINTMENT_NOT_IN_POSSESSION_CUR_APP, integerSchema, ObjectSchema.OPTIONAL);
+            add(appointmentNotInPossession, AppointmentNotInPossession.class);
+
+            PredicateSchema appointmentNotPreferred = new PredicateSchema(APPOINTMENT_NOT_PREFERRED);
+            add(appointmentNotPreferred, AppointmentNotPreferred.class);
 
         } catch (OntologyException e) {
             throw new RuntimeException(e);

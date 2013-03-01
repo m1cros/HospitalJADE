@@ -1,6 +1,7 @@
 package jadeCW;
 
 import jade.content.ContentElement;
+import jade.content.Predicate;
 import jade.content.lang.Codec;
 import jade.content.onto.OntologyException;
 import jade.core.AID;
@@ -68,7 +69,9 @@ public class RespondToProposal1 extends CyclicBehaviour {
 
 
             if (patientAgent.getCurrentAllocation() != agentAllocationSwap.getDesiredAllocation()) {
-                refuseSwapProposal(message);
+                AppointmentNotInPossession appointmentNotInPossession = new AppointmentNotInPossession();
+                appointmentNotInPossession.setCurrentAppointment(patientAgent.getCurrentAllocation());
+                refuseSwapProposal(message, appointmentNotInPossession);
             }
 
             else if (patientAgent.getPatientPreference().isAllocationSwapAcceptable(agentAllocationSwap.getCurrentAllocation(),
@@ -78,26 +81,22 @@ public class RespondToProposal1 extends CyclicBehaviour {
                 informHospitalAgentOfSwap(agentAllocationSwap, dfSubscription.getAgentDescription().getName(), message.getSender());
 
             } else {
-                refuseSwapProposal(message);
+                AppointmentNotPreferred appointmentNotPreferred = new AppointmentNotPreferred();
+                refuseSwapProposal(message, appointmentNotPreferred);
             }
         }
     }
 
-    private void refuseSwapProposal(ACLMessage message) {
+    private void refuseSwapProposal(ACLMessage message, Predicate reason) {
 
         ACLMessage refuseSwapMessage = new ACLMessage(ACLMessage.REJECT_PROPOSAL);
         refuseSwapMessage.setProtocol(FIPANames.InteractionProtocol.FIPA_PROPOSE);
         refuseSwapMessage.setLanguage(patientAgent.getCodec().getName());
         refuseSwapMessage.setOntology(HospitalOntology.NAME);
-
         refuseSwapMessage.addReceiver(message.getSender());
 
-        SwapAllocationUpdate swapAllocationUpdate = new SwapAllocationUpdate();
-        swapAllocationUpdate.setAllocation(patientAgent.getCurrentAllocation());
-        swapAllocationUpdate.setHolder(patientAgent.getName());
-
         try {
-            patientAgent.getContentManager().fillContent(refuseSwapMessage, swapAllocationUpdate);
+            patientAgent.getContentManager().fillContent(refuseSwapMessage, reason);
         } catch (Codec.CodecException e) {
             throw new RuntimeException(e);
         } catch (OntologyException e) {
@@ -134,6 +133,8 @@ public class RespondToProposal1 extends CyclicBehaviour {
         allocationSwapSummary.setProposingAgent(swapProposalAgent.getName());
         allocationSwapSummary.setReceivingAgentOldAppointment(agentAllocationSwap.getDesiredAllocation());
         allocationSwapSummary.setReceivingAgent(patientAgent.getName());
+
+        System.out.println("Responding agent " + patientAgent.getLocalName() + " informing with " + allocationSwapSummary);
 
         try {
 

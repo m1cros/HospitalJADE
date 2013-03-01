@@ -53,13 +53,16 @@ public class ProposeSwap extends Behaviour {
                     // ask hospital agent for this appointment
                     requestSwapWithAgent(appointmentAgentDescription.getName(), allocationSwap);
                 }
-                else {
+                else if (patientAgent.getCurrentAllocation() != preferredAllocation.getAppointment()) {
                     // ask other agent
                     System.out.println(patientAgent.getLocalName() + " asking other agent " +
                             "for appointment " + preferredAllocation.getAppointment());
                     String allocationHolderName = preferredAllocation.getAppointmentHolder();
                     AID allocationHolderAID = new AID(allocationHolderName, AID.ISGUID);
                     requestSwapWithAgent(allocationHolderAID, allocationSwap);
+                }
+                else {
+                    break;
                 }
                 boolean swapMade = receiveResponse(allocationSwap, appointmentAgentDescription.getName());
                 if (swapMade) break;
@@ -144,21 +147,23 @@ public class ProposeSwap extends Behaviour {
 
         if (swapAccepted) {
             patientAgent.setCurrentAllocation(swapSent.getDesiredAllocation());
-            if (message.getSender() != hospitalAgent) {
+            if (!message.getSender().equals(hospitalAgent)) {
                 informHospitalAgentOfSwap(swapSent, message.getSender(), hospitalAgent);
             }
             return true;
         }
         else {
-            if (message.getSender() == hospitalAgent) {
+            if (!message.getSender().equals(hospitalAgent)) {
                 // obtain current owner address from the message
                 // send request to that guy
+                // hospital is sending AllocationQuery
             }
             else {
                 // message received from another patient agent
                 // check if the case for refusal was appointment not in possession
                 // if so, query hospital agent about the current holder and send request to him
                 // else return false
+                // patient is sending either AppointmentNotInPossession OR AppointmnetNotPreferred
             }
             return false;
         }
@@ -178,6 +183,8 @@ public class ProposeSwap extends Behaviour {
         allocationSwapSummary.setProposingAgent(patientAgent.getName());
         allocationSwapSummary.setReceivingAgentOldAppointment(agentAllocationSwap.getDesiredAllocation());
         allocationSwapSummary.setReceivingAgent(otherAgent.getName());
+
+        System.out.println("Proposing agent " + patientAgent.getLocalName() + " informing with " + allocationSwapSummary);
 
         try {
             patientAgent.getContentManager().fillContent(acceptSwapMessage, allocationSwapSummary);
