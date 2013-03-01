@@ -74,10 +74,9 @@ public class UpdateAppointments extends CyclicBehaviour {
             if (swappedAppointments.containsKey(key)) {
                 Set<AID> swappers = swappedAppointments.get(key);
                 swappers.add(message.getSender());
-                if (swappers.contains(proposingAgentOldAppointment)
-                        && swappers.contains(receivingAgentOldAppointment)) {
+                if (swappers.contains(proposingAgentAID)
+                        && swappers.contains(receivingAgentAID)) {
                     // we received both confirmations, update appointment table
-                    System.out.println("Swapping!");
                     hospitalAgent.setAppointment(receivingAgentOldAppointment, proposingAgentAID);
                     hospitalAgent.setAppointment(proposingAgentOldAppointment, receivingAgentAID);
                     swappedAppointments.remove(key);
