@@ -47,8 +47,6 @@ public class DFPatientSubscription extends SubscriptionInitiator {
                         ServiceDescription sd = (ServiceDescription) it.next();
                         if (sd.getType().equals(GlobalAgentConstants.APPOINTMENT_SERVICE_TYPE)) {
                             allocateApptsAgents.add(dfd);
-                            System.out.println("allocate-appointments service found:");
-                            System.out.println("- Service \"" + sd.getName() + "\" provided by agent " + provider.getName());
                         }
                     }
                 }
