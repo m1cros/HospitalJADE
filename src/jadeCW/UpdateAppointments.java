@@ -33,7 +33,7 @@ public class UpdateAppointments extends CyclicBehaviour {
                         MessageTemplate.MatchOntology(HospitalOntology.NAME),
                         MessageTemplate.and(
                                 MessageTemplate.MatchLanguage(hospitalAgent.getCodec().getName()),
-                                MessageTemplate.MatchPerformative(ACLMessage.ACCEPT_PROPOSAL)
+                                MessageTemplate.MatchPerformative(ACLMessage.INFORM)
                         )
                 )
         );
@@ -42,7 +42,7 @@ public class UpdateAppointments extends CyclicBehaviour {
 
         if (message != null) {
 
-            ContentElement p = null;
+            ContentElement p;
             AllocationSwapSummary allocationSwapSummary;
 
             try {
@@ -59,32 +59,31 @@ public class UpdateAppointments extends CyclicBehaviour {
                 throw new RuntimeException();
             }
 
+            int proposingAgentOldAppointment = allocationSwapSummary.getProposingAgentOldAppointment();
+            int receivingAgentOldAppointment = allocationSwapSummary.getReceivingAgentOldAppointment();
+            String proposingAgent = allocationSwapSummary.getProposingAgent();
+            String receivingAgent = allocationSwapSummary.getReceivingAgent();
 
-            int leftAllocation = allocationSwapSummary.getLeftAllocation();
-            int rightAllocation = allocationSwapSummary.getRightAllocation();
-            String leftAllocationHolder = allocationSwapSummary.getLeftHolder();
-            String rightAllocationHolder = allocationSwapSummary.getRightHolder();
+            AID proposingAgentAID = new AID(proposingAgent, AID.ISGUID);
+            AID receivingAgentAID = new AID(receivingAgent, AID.ISGUID);
 
-            AID leftAllocationHolderAID = new AID(leftAllocationHolder, AID.ISGUID);
-            AID rightAllocationHolderAID = new AID(rightAllocationHolder, AID.ISGUID);
-
-            AppointmentTuple key = new AppointmentTuple(leftAllocation, rightAllocation);
+            AppointmentTuple key = new AppointmentTuple(proposingAgentOldAppointment, receivingAgentOldAppointment);
             if (swappedAppointments.containsKey(key)) {
                 Set<AID> swappers = swappedAppointments.get(key);
-                if (swappers.contains(leftAllocation) && swappers.contains(rightAllocation)) {
-                    //
-                    hospitalAgent.setAppointment(leftAllocation, leftAllocationHolderAID);
-                    hospitalAgent.setAppointment(rightAllocation, rightAllocationHolderAID);
+                swappers.add(message.getSender());
+                if (swappers.contains(proposingAgentOldAppointment)
+                        && swappers.contains(receivingAgentOldAppointment)) {
+                    // we received both confirmations, update appointment table
+                    hospitalAgent.setAppointment(receivingAgentOldAppointment, proposingAgentAID);
+                    hospitalAgent.setAppointment(proposingAgentOldAppointment, receivingAgentAID);
+                    swappedAppointments.remove(key);
                 }
-
-                // remove from swappedAppointsment
-                swappedAppointments.remove(key);
             } else {
-                //add to map
+                // we received the first confirmation
                 Set<AID> owners = new HashSet<AID>();
-                owners.add(leftAllocationHolderAID);
-                owners.add(rightAllocationHolderAID);
-                swappedAppointments.put(new AppointmentTuple(leftAllocation, rightAllocation), owners);
+                owners.add(message.getSender());
+                swappedAppointments.put(new AppointmentTuple(proposingAgentOldAppointment,
+                        receivingAgentOldAppointment), owners);
             }
         }
 

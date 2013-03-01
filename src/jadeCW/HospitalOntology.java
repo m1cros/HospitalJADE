@@ -29,10 +29,10 @@ public class HospitalOntology extends Ontology {
     public static final String SWAP_ALLOCATION_UPDATE = "SWAP_ALLOCATION_UPDATE";
 
     public static final String ALLOCATION_SWAP_SUMMARY = "ALLOCATION_SWAP_SUMMARY";
-    public static final String ALLOCATION_SWAP_SUMMARY_LEFT_ALLOCATION = "leftAllocation";
-    public static final String ALLOCATION_SWAP_SUMMARY_LEFT_HOLDER = "leftHolder";
-    public static final String ALLOCATION_SWAP_SUMMARY_RIGHT_ALLOCATION = "rightAllocation";
-    public static final String ALLOCATION_SWAP_SUMMARY_RIGHT_HOLDER = "rightHolder";
+    public static final String ALLOCATION_SWAP_SUMMARY_PROPOSING_APPOINTMENT = "proposingAgentOldAppointment";
+    public static final String ALLOCATION_SWAP_SUMMARY_PROPOSING_AGENT = "proposingAgent";
+    public static final String ALLOCATION_SWAP_SUMMARY_RECEIVING_APPOINTMENT = "receivingAgentOldAppointment";
+    public static final String ALLOCATION_SWAP_SUMMARY_RECEIVING_AGENT = "receivingAgent";
 
     private static Ontology theInstance = new HospitalOntology();
 
@@ -72,10 +72,10 @@ public class HospitalOntology extends Ontology {
             add(swapAllocationUpdateSchema, SwapAllocationUpdate.class);
 
             PredicateSchema allocationSwapSummary = new PredicateSchema(ALLOCATION_SWAP_SUMMARY);
-            allocationSwapSummary.add(ALLOCATION_SWAP_SUMMARY_LEFT_ALLOCATION, integerSchema, ObjectSchema.MANDATORY);
-            allocationSwapSummary.add(ALLOCATION_SWAP_SUMMARY_LEFT_HOLDER, stringSchema, ObjectSchema.MANDATORY);
-            allocationSwapSummary.add(ALLOCATION_SWAP_SUMMARY_RIGHT_ALLOCATION, integerSchema, ObjectSchema.MANDATORY);
-            allocationSwapSummary.add(ALLOCATION_SWAP_SUMMARY_RIGHT_HOLDER, stringSchema, ObjectSchema.MANDATORY);
+            allocationSwapSummary.add(ALLOCATION_SWAP_SUMMARY_PROPOSING_APPOINTMENT, integerSchema, ObjectSchema.MANDATORY);
+            allocationSwapSummary.add(ALLOCATION_SWAP_SUMMARY_PROPOSING_AGENT, stringSchema, ObjectSchema.MANDATORY);
+            allocationSwapSummary.add(ALLOCATION_SWAP_SUMMARY_RECEIVING_APPOINTMENT, integerSchema, ObjectSchema.MANDATORY);
+            allocationSwapSummary.add(ALLOCATION_SWAP_SUMMARY_RECEIVING_AGENT, stringSchema, ObjectSchema.MANDATORY);
             add(allocationSwapSummary,AllocationSwapSummary.class);
 
 

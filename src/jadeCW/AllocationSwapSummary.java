@@ -4,42 +4,42 @@ import jade.content.Predicate;
 
 public class AllocationSwapSummary implements Predicate {
 
-    private int leftAllocation;
-    private String leftHolder;
+    private String proposingAgent;
+    private String receivingAgent;
+    private int proposingAgentOldAppointment;
+    private int receivingAgentOldAppointment;
 
-    private int rightAllocation;
-    private String rightHolder;
-
-    public int getLeftAllocation() {
-        return leftAllocation;
+    public String getProposingAgent() {
+        return proposingAgent;
     }
 
-    public void setLeftAllocation(int leftAllocation) {
-        this.leftAllocation = leftAllocation;
+    public void setProposingAgent(String proposingAgent) {
+        this.proposingAgent = proposingAgent;
     }
 
-    public String getLeftHolder() {
-        return leftHolder;
+    public String getReceivingAgent() {
+        return receivingAgent;
     }
 
-    public void setLeftHolder(String leftHolder) {
-        this.leftHolder = leftHolder;
+    public void setReceivingAgent(String receivingAgent) {
+        this.receivingAgent = receivingAgent;
     }
 
-    public int getRightAllocation() {
-        return rightAllocation;
+    public int getReceivingAgentOldAppointment() {
+        return receivingAgentOldAppointment;
     }
 
-    public void setRightAllocation(int rightAllocation) {
-        this.rightAllocation = rightAllocation;
+    public void setReceivingAgentOldAppointment(int receivingAgentOldAppointment) {
+        this.receivingAgentOldAppointment = receivingAgentOldAppointment;
     }
 
-    public String getRightHolder() {
-        return rightHolder;
+    public int getProposingAgentOldAppointment() {
+        return proposingAgentOldAppointment;
     }
 
-    public void setRightHolder(String rightHolder) {
-        this.rightHolder = rightHolder;
+    public void setProposingAgentOldAppointment(int proposingAgentOldAppointment) {
+        this.proposingAgentOldAppointment = proposingAgentOldAppointment;
     }
+
 }
 

@@ -1,6 +1,5 @@
 package jadeCW;
 
-import jade.content.ContentElement;
 import jade.content.lang.Codec;
 import jade.content.onto.OntologyException;
 import jade.core.AID;
@@ -146,7 +145,7 @@ public class ProposeSwap extends Behaviour {
         if (swapAccepted) {
             patientAgent.setCurrentAllocation(swapSent.getDesiredAllocation());
             if (message.getSender() != hospitalAgent) {
-                informHospitalAgentOfSwap(hospitalAgent, swapSent);
+                informHospitalAgentOfSwap(swapSent, message.getSender(), hospitalAgent);
             }
             return true;
         }
@@ -165,20 +164,30 @@ public class ProposeSwap extends Behaviour {
         }
     }
 
-    private void informHospitalAgentOfSwap(AID hospitalAgent, AgentAllocationSwap agentAllocationSwap) {
-        ACLMessage notifyMessage = new ACLMessage(ACLMessage.INFORM);
-        notifyMessage.setProtocol(FIPANames.InteractionProtocol.FIPA_PROPOSE);
-        notifyMessage.setLanguage(patientAgent.getCodec().getName());
-        notifyMessage.setOntology(HospitalOntology.NAME);
-        notifyMessage.addReceiver(hospitalAgent);
+    private void informHospitalAgentOfSwap(AgentAllocationSwap agentAllocationSwap,
+                                           AID otherAgent, AID hospitalAgent) {
+
+        ACLMessage acceptSwapMessage = new ACLMessage(ACLMessage.INFORM);
+        acceptSwapMessage.setProtocol(FIPANames.InteractionProtocol.FIPA_PROPOSE);
+        acceptSwapMessage.setLanguage(patientAgent.getCodec().getName());
+        acceptSwapMessage.setOntology(HospitalOntology.NAME);
+        acceptSwapMessage.addReceiver(hospitalAgent);
+
+        AllocationSwapSummary allocationSwapSummary = new AllocationSwapSummary();
+        allocationSwapSummary.setProposingAgentOldAppointment(agentAllocationSwap.getCurrentAllocation());
+        allocationSwapSummary.setProposingAgent(patientAgent.getName());
+        allocationSwapSummary.setReceivingAgentOldAppointment(agentAllocationSwap.getDesiredAllocation());
+        allocationSwapSummary.setReceivingAgent(otherAgent.getName());
+
         try {
-            patientAgent.getContentManager().fillContent(notifyMessage, agentAllocationSwap);
+            patientAgent.getContentManager().fillContent(acceptSwapMessage, allocationSwapSummary);
         } catch (Codec.CodecException e) {
             throw new RuntimeException(e);
         } catch (OntologyException e) {
             throw new RuntimeException(e);
         }
-        patientAgent.send(notifyMessage);
+
+        patientAgent.send(acceptSwapMessage);
     }
 
 

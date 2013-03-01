@@ -49,7 +49,7 @@ public class RespondToProposal1 extends CyclicBehaviour {
 
         if (message != null) {
 
-            ContentElement p = null;
+            ContentElement p;
             AgentAllocationSwap agentAllocationSwap;
 
             try {
@@ -120,19 +120,20 @@ public class RespondToProposal1 extends CyclicBehaviour {
 
     }
 
-    private void informHospitalAgentOfSwap(AgentAllocationSwap agentAllocationSwap, AID hospitalAgent, AID swapProposalAgent) {
+    private void informHospitalAgentOfSwap(AgentAllocationSwap agentAllocationSwap,
+                                           AID hospitalAgent, AID swapProposalAgent) {
 
-        ACLMessage acceptSwapMessage = new ACLMessage(ACLMessage.ACCEPT_PROPOSAL);
+        ACLMessage acceptSwapMessage = new ACLMessage(ACLMessage.INFORM);
         acceptSwapMessage.setProtocol(FIPANames.InteractionProtocol.FIPA_PROPOSE);
         acceptSwapMessage.setLanguage(patientAgent.getCodec().getName());
         acceptSwapMessage.setOntology(HospitalOntology.NAME);
         acceptSwapMessage.addReceiver(hospitalAgent);
 
         AllocationSwapSummary allocationSwapSummary = new AllocationSwapSummary();
-        allocationSwapSummary.setLeftAllocation(agentAllocationSwap.getCurrentAllocation());
-        allocationSwapSummary.setLeftHolder(patientAgent.getName());
-        allocationSwapSummary.setRightAllocation(agentAllocationSwap.getDesiredAllocation());
-        allocationSwapSummary.setRightHolder(swapProposalAgent.getName());
+        allocationSwapSummary.setProposingAgentOldAppointment(agentAllocationSwap.getCurrentAllocation());
+        allocationSwapSummary.setProposingAgent(swapProposalAgent.getName());
+        allocationSwapSummary.setReceivingAgentOldAppointment(agentAllocationSwap.getDesiredAllocation());
+        allocationSwapSummary.setReceivingAgent(patientAgent.getName());
 
         try {
 
