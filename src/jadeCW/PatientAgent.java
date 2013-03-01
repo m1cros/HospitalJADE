@@ -16,6 +16,7 @@ public class PatientAgent extends Agent {
 
 
     private PatientPreference patientPreference;
+    private AllocationFinder allocationFinder;
     private DFPatientSubscription dfSubscription;
     private RequestAppointment requestAppointmentBehaviour;
     private FindAppointmentOwner findAppointmentOwner;
@@ -29,6 +30,10 @@ public class PatientAgent extends Agent {
     public Codec getCodec() {
         return codec;
     }
+
+    public AllocationFinder getAllocationFinder() {
+         return allocationFinder;
+     }
 
     public int getCurrentAllocation() {
         return currentAllocation;
@@ -47,7 +52,7 @@ public class PatientAgent extends Agent {
     }
 
     public PatientPreference getPatientPreference() {
-            return patientPreference;
+        return patientPreference;
      }
 
     protected void setup() {
@@ -59,6 +64,8 @@ public class PatientAgent extends Agent {
         initializeArguments();
         subscribeToDFAgents();
 
+        allocationFinder = new AllocationFinder(this);
+
         addPatientBehaviour();
 
         System.out.println("Finished initialization of patient agent: " + getLocalName());
@@ -67,7 +74,7 @@ public class PatientAgent extends Agent {
     private void addPatientBehaviour() {
 
         requestAppointmentBehaviour = new RequestAppointment(dfSubscription, this);
-        findAppointmentOwner = new FindAppointmentOwner(dfSubscription, this, patientPreference);
+        findAppointmentOwner = new FindAppointmentOwner(dfSubscription, this);
 
         addBehaviour(requestAppointmentBehaviour);
         addBehaviour(findAppointmentOwner);
@@ -96,7 +103,8 @@ public class PatientAgent extends Agent {
         // We want to receive 10 results at most
         sc.setMaxResults(GlobalAgentConstants.MAX_AGENT_QUEUE);
 
-        dfSubscription = new DFPatientSubscription(this, DFService.createSubscriptionMessage(this, getDefaultDF(), template, sc));
+        dfSubscription
+            = new DFPatientSubscription(this, DFService.createSubscriptionMessage(this, getDefaultDF(), template, sc));
         addBehaviour(dfSubscription);
     }
 
@@ -106,6 +114,16 @@ public class PatientAgent extends Agent {
             allocation = currentAllocation;
         }
         System.out.println(getLocalName() + ": " + allocation);
+    }
+
+    public void updatePreferredAllocations() {
+        DFAgentDescription appointmentAgentDescription = dfSubscription.getAgentDescription();
+        if (appointmentAgentDescription != null) {
+            List<AllocationState> preferredAllocations
+                    = allocationFinder.getAllPreferredAllocations(appointmentAgentDescription,
+                                                                  getCurrentAllocation());
+            setAllocationStates(preferredAllocations);
+        }
     }
 
 
