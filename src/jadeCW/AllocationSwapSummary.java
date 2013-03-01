@@ -57,5 +57,48 @@ public class AllocationSwapSummary implements Predicate {
                 " receiving agent old appointment: " + receivingAgentOldAppointment;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        AllocationSwapSummary that = (AllocationSwapSummary) o;
+        AllocationSwapSummary revertedThat = that.getRevertedAllocationSwapSummary();
+
+        return isTheSame(that) || isTheSame(revertedThat);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = proposingAgent.hashCode();
+        result += receivingAgent.hashCode();
+        result += timestamp.hashCode();
+        result += proposingAgentOldAppointment;
+        result += receivingAgentOldAppointment;
+        return result;
+    }
+
+    public AllocationSwapSummary getRevertedAllocationSwapSummary() {
+        AllocationSwapSummary allocationSwapSummary = new AllocationSwapSummary();
+        allocationSwapSummary.setTimestamp(getTimestamp());
+
+        allocationSwapSummary.setReceivingAgent(getProposingAgent());
+        allocationSwapSummary.setReceivingAgentOldAppointment(getProposingAgentOldAppointment());
+
+        allocationSwapSummary.setProposingAgent(getReceivingAgent());
+        allocationSwapSummary.setProposingAgentOldAppointment(getReceivingAgentOldAppointment());
+
+        return allocationSwapSummary;
+    }
+
+    public boolean isTheSame(AllocationSwapSummary that) {
+        if (proposingAgentOldAppointment != that.proposingAgentOldAppointment) return false;
+        if (receivingAgentOldAppointment != that.receivingAgentOldAppointment) return false;
+        if (!proposingAgent.equals(that.proposingAgent)) return false;
+        if (!receivingAgent.equals(that.receivingAgent)) return false;
+        if (!timestamp.equals(that.timestamp)) return false;
+
+        return true;
+    }
 }
 

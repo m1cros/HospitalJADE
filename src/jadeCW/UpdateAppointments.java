@@ -14,7 +14,7 @@ import java.util.*;
 
 public class UpdateAppointments extends CyclicBehaviour {
 
-    private final Set<AllocationSwapSummary> swappedAppointments = new TreeSet<AllocationSwapSummary>();
+    private final Set<AllocationSwapSummary> swappedAppointments = new HashSet<AllocationSwapSummary>();
     private final HospitalAgent hospitalAgent;
 
     public UpdateAppointments(HospitalAgent hospitalAgent) {
@@ -56,7 +56,7 @@ public class UpdateAppointments extends CyclicBehaviour {
                 throw new RuntimeException();
             }
 
-            System.out.println("Received update message : " + message);
+            System.out.println("Received update message from " + message.getSender().getLocalName());
             System.out.println("With summary: " + allocationSwapSummary);
 
             AID proposingAgentAID = new AID(allocationSwapSummary.getProposingAgent(), AID.ISGUID);

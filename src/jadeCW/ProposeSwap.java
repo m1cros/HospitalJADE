@@ -19,6 +19,10 @@ public class ProposeSwap extends Behaviour {
     private final int maxIterationsNum = 40;
     private int iterationsWithNoImprovementCount = 0;
 
+    private Iterator<AllocationState> preferredAllocationsIterator;
+    private MessageTemplate expectedMessageTemplate;
+    private int currentSize;
+
     public ProposeSwap(DFPatientSubscription dfSubscription, PatientAgent patientAgent) {
         this.patientAgent = patientAgent;
         this.dfSubscription = dfSubscription;
@@ -29,27 +33,45 @@ public class ProposeSwap extends Behaviour {
 
         // finding agent for appointment-service
         DFAgentDescription appointmentAgentDescription = dfSubscription.getAgentDescription();
+        List<AllocationState> preferredAllocations = patientAgent.getAllocationStates();
 
-        if (appointmentAgentDescription != null) {
+        if (appointmentAgentDescription != null && !preferredAllocations.isEmpty()) {
 
-            List<AllocationState> preferredAllocations = patientAgent.getAllocationStates();
-            Iterator<AllocationState> preferredAllocationsIterator = preferredAllocations.iterator();
-            boolean shouldContinue = true;
-
-            System.out.println("When we enter the allocation states for agent " +
-                    patientAgent.getLocalName() + " are " + preferredAllocations.toString());
-
-            while (preferredAllocationsIterator.hasNext() && shouldContinue) {
-                shouldContinue = proposeSwap(preferredAllocationsIterator.next(),appointmentAgentDescription);
+            if(preferredAllocationsIterator == null) {
+                preferredAllocationsIterator = patientAgent.getAllocationStates().iterator();
+                currentSize = patientAgent.getAllocationStates().size();
             }
 
-            updatePatientAgentState(preferredAllocations);
+            if(!preferredAllocationsIterator.hasNext()) {
+                updatePreferences();
+                proposeSwap(preferredAllocationsIterator.next(),appointmentAgentDescription);
+            } else if(expectedMessageTemplate == null) {
+                proposeSwap(preferredAllocationsIterator.next(),appointmentAgentDescription);
+            } else {
+                ACLMessage expectedMessage = patientAgent.receive(expectedMessageTemplate);
+
+                if(expectedMessage != null) {
+                    boolean wasSwapSuccessful = receiveResponse(expectedMessage,appointmentAgentDescription);
+
+                    expectedMessageTemplate = null;
+
+                    if(wasSwapSuccessful) {
+                        updatePreferences();
+                    }
+                }
+            }
 
         }
 
     }
 
-    private void updatePatientAgentState(List<AllocationState> preferredAllocations) {
+    private void updatePreferences() {
+        updatePatientAgentState(currentSize);
+        preferredAllocationsIterator = patientAgent.getAllocationStates().iterator();
+        currentSize = patientAgent.getAllocationStates().size();
+    }
+
+    private void updatePatientAgentState(int currentSize) {
         // check if we should terminate
         patientAgent.updatePreferredAllocations();
         List<AllocationState> newPreferredAllocations = patientAgent.getAllocationStates();
@@ -57,7 +79,7 @@ public class ProposeSwap extends Behaviour {
             // we have our favourite allocation
             System.out.println("Optimal appointment found for agent: " + patientAgent.getLocalName() + " appointment:  " + patientAgent.getCurrentAllocation());
             isHappyWithAppointment = true;
-        } else if (newPreferredAllocations.size() == preferredAllocations.size()) {
+        } else if (newPreferredAllocations.size() == currentSize) {
             // no improvement
             iterationsWithNoImprovementCount++;
         } else {
@@ -118,21 +140,19 @@ public class ProposeSwap extends Behaviour {
     }
 
     // returns true if swap was made
-    private boolean receiveResponse(AgentAllocationSwap swapSent, AID hospitalAgent, String timestamp) {
+    private boolean receiveResponse(ACLMessage expectedMessage, DFAgentDescription hospitalAgent) {
 
         System.out.println("Agent " + patientAgent.getLocalName() + " waiting to receive response");
-        MessageTemplate messageTemplate = createMatchingTemplate(timestamp);
-        ACLMessage message = patientAgent.blockingReceive(messageTemplate);
 
-        boolean shouldContinueSwapping;
-        if (message.getPerformative() == ACLMessage.ACCEPT_PROPOSAL) {
+        boolean successfulSwap;
+        if (expectedMessage.getPerformative() == ACLMessage.ACCEPT_PROPOSAL) {
 
             patientAgent.setCurrentAllocation(swapSent.getDesiredAllocation());
-            if (!message.getSender().equals(hospitalAgent)) {
+            if (!expectedMessage.getSender().equals(hospitalAgent.getName())) {
                 informHospitalAgentOfSwap(swapSent, message.getSender(), hospitalAgent, timestamp);
             }
 
-            shouldContinueSwapping = false;
+            successfulSwap = true;
 
         } else {
 
@@ -148,10 +168,10 @@ public class ProposeSwap extends Behaviour {
                 // patient is sending either AppointmentNotInPossession OR AppointmnetNotPreferred
             }
 
-            shouldContinueSwapping = true;
+            successfulSwap = false;
         }
 
-        return shouldContinueSwapping;
+        return successfulSwap;
     }
 
     private void informHospitalAgentOfSwap(AgentAllocationSwap agentAllocationSwap,
