@@ -17,7 +17,8 @@ public class ProposeSwap extends Behaviour {
     private boolean isHappyWithAppointment = false;
     private final PatientAgent patientAgent;
     private final DFPatientSubscription dfSubscription;
-    private final int maxIterationsNum = 20;
+    private final int maxIterationsNum = 40;
+    private int iterationsWithNoImprovementCount = 0;
 
     public ProposeSwap(DFPatientSubscription dfSubscription, PatientAgent patientAgent) {
         this.patientAgent = patientAgent;
@@ -33,63 +34,57 @@ public class ProposeSwap extends Behaviour {
         if (appointmentAgentDescription != null) {
 
             List<AllocationState> preferredAllocations = patientAgent.getAllocationStates();
-            int iterationsWithNoImprovementCount = 0;
 
             System.out.println("When we enter the allocation states for agent " +
-                patientAgent.getLocalName() + " are " + preferredAllocations.toString());
+                    patientAgent.getLocalName() + " are " + preferredAllocations.toString());
 
-            while(!isHappyWithAppointment) {
 
-                for (AllocationState preferredAllocation : preferredAllocations) {
-                    // try getting a better one
-                    AgentAllocationSwap allocationSwap = new AgentAllocationSwap();
-                    allocationSwap.setCurrentAllocation(patientAgent.getCurrentAllocation());
-                    allocationSwap.setDesiredAllocation(preferredAllocation.getAppointment());
+            for (AllocationState preferredAllocation : preferredAllocations) {
+                // try getting a better one
+                AgentAllocationSwap allocationSwap = new AgentAllocationSwap();
+                allocationSwap.setCurrentAllocation(patientAgent.getCurrentAllocation());
+                allocationSwap.setDesiredAllocation(preferredAllocation.getAppointment());
 
-                    System.out.println("Current appointment of agent : " + patientAgent.getLocalName() +
-                            " is " + patientAgent.getCurrentAllocation());
+                System.out.println("Current appointment of agent : " + patientAgent.getLocalName() +
+                        " is " + patientAgent.getCurrentAllocation());
 
-                    boolean slotFree = preferredAllocation.getAppointmentStatus()
-                                       .equals(GlobalAgentConstants.APPOINTMENT_QUERY_RESPONSE_STATUS_FREE);
-                    if (slotFree) {
-                        // ask hospital agent for this appointment
-                        requestSwapWithAgent(appointmentAgentDescription.getName(), allocationSwap);
-                    }
-                    else {
-                        // ask other agent
-                        System.out.println(patientAgent.getLocalName() + " asking other agent " +
-                                "for appointment " + preferredAllocation.getAppointment());
-                        String allocationHolderName = preferredAllocation.getAppointmentHolder();
-                        AID allocationHolderAID = new AID(allocationHolderName, AID.ISGUID);
-                        requestSwapWithAgent(allocationHolderAID, allocationSwap);
-                    }
-                    boolean swapMade = receiveResponse(allocationSwap, appointmentAgentDescription.getName());
-                    if (swapMade) break;
+                boolean slotFree = preferredAllocation.getAppointmentStatus()
+                        .equals(GlobalAgentConstants.APPOINTMENT_QUERY_RESPONSE_STATUS_FREE);
+                if (slotFree) {
+                    // ask hospital agent for this appointment
+                    requestSwapWithAgent(appointmentAgentDescription.getName(), allocationSwap);
                 }
-
-                // check if we should terminate
-                patientAgent.updatePreferredAllocations();
-                List<AllocationState> newPreferredAllocations = patientAgent.getAllocationStates();
-                if (newPreferredAllocations.isEmpty() || iterationsWithNoImprovementCount == maxIterationsNum) {
-                    // we have our favourite allocation
-                    System.out.println("Optimal appointment found for agent: "
-                            + patientAgent.getLocalName() + " appointment:  " + patientAgent.getCurrentAllocation());
-                    isHappyWithAppointment = true;
-                }
-                else if (newPreferredAllocations.size() == preferredAllocations.size()) {
-                        // no improvement
-                        iterationsWithNoImprovementCount++;
-                    }
                 else {
-                        iterationsWithNoImprovementCount = 0;
+                    // ask other agent
+                    System.out.println(patientAgent.getLocalName() + " asking other agent " +
+                            "for appointment " + preferredAllocation.getAppointment());
+                    String allocationHolderName = preferredAllocation.getAppointmentHolder();
+                    AID allocationHolderAID = new AID(allocationHolderName, AID.ISGUID);
+                    requestSwapWithAgent(allocationHolderAID, allocationSwap);
                 }
+                boolean swapMade = receiveResponse(allocationSwap, appointmentAgentDescription.getName());
+                if (swapMade) break;
+            }
 
-                // continue
-                preferredAllocations = newPreferredAllocations;
-
+            // check if we should terminate
+            patientAgent.updatePreferredAllocations();
+            List<AllocationState> newPreferredAllocations = patientAgent.getAllocationStates();
+            if (newPreferredAllocations.isEmpty() || iterationsWithNoImprovementCount == maxIterationsNum) {
+                // we have our favourite allocation
+                System.out.println("Optimal appointment found for agent: "
+                        + patientAgent.getLocalName() + " appointment:  " + patientAgent.getCurrentAllocation());
+                isHappyWithAppointment = true;
+            }
+            else if (newPreferredAllocations.size() == preferredAllocations.size()) {
+                // no improvement
+                iterationsWithNoImprovementCount++;
+            }
+            else {
+                iterationsWithNoImprovementCount = 0;
             }
 
         }
+
     }
 
     private void requestSwapWithAgent(AID agent, AgentAllocationSwap agentAllocationSwap) {
