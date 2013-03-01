@@ -26,7 +26,7 @@ public class FindAppointmentOwner extends Behaviour {
                     = allocFinder.getAllPreferredAllocations(appointmentAgentDescription,
                                                              patientAgent.getCurrentAllocation());
 
-            System.out.println(patientAgent.getLocalName() + ": more preferred states: " + preferredAllocations.toString());
+            //System.out.println(patientAgent.getLocalName() + ": more preferred states: " + preferredAllocations.toString());
             patientAgent.setAllocationStates(preferredAllocations);
             allocationStatesSet = true;
         }
