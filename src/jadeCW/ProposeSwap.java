@@ -35,6 +35,9 @@ public class ProposeSwap extends Behaviour {
             List<AllocationState> preferredAllocations = patientAgent.getAllocationStates();
             int iterationsWithNoImprovementCount = 0;
 
+            System.out.println("When we enter the allocation states for agent " +
+                patientAgent.getLocalName() + " are " + preferredAllocations.toString());
+
             while(!isHappyWithAppointment) {
 
                 for (AllocationState preferredAllocation : preferredAllocations) {
@@ -54,6 +57,8 @@ public class ProposeSwap extends Behaviour {
                     }
                     else {
                         // ask other agent
+                        System.out.println(patientAgent.getLocalName() + " asking other agent " +
+                                "for appointment " + preferredAllocation.getAppointment());
                         String allocationHolderName = preferredAllocation.getAppointmentHolder();
                         AID allocationHolderAID = new AID(allocationHolderName, AID.ISGUID);
                         requestSwapWithAgent(allocationHolderAID, allocationSwap);
@@ -132,10 +137,16 @@ public class ProposeSwap extends Behaviour {
                         )
                 )
         );
+
+        System.out.println("Agent " + patientAgent.getLocalName() + " waiting to receive response");
+
         MessageTemplate messageTemplate = MessageTemplate.or(messageTemplateAccept, messageTemplateReject);
-        ACLMessage message = patientAgent.blockingReceive(messageTemplate);
+        ACLMessage message = patientAgent.receive(messageTemplate);
+        if (message == null) return false;
 
         boolean swapAccepted = message.getPerformative() == ACLMessage.ACCEPT_PROPOSAL;
+
+        System.out.println("Agent " + patientAgent.getLocalName() + " received his response " + message.toString());
 
         if (swapAccepted) {
             patientAgent.setCurrentAllocation(swapSent.getDesiredAllocation());

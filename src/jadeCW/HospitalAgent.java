@@ -40,6 +40,10 @@ public class HospitalAgent extends Agent {
         appointments.put(appointmentTime,patientID);
     }
 
+    public void removeAppointment(int appointmentTime) {
+        appointments.remove(appointmentTime);
+    }
+
     public int getAppointmentsNum() {
         return appointmentsNum;
     }

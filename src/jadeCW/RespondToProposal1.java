@@ -71,12 +71,12 @@ public class RespondToProposal1 extends CyclicBehaviour {
                 refuseSwapProposal(message);
             }
 
-            if (patientAgent.getPatientPreference().isAllocationSwapAcceptable(agentAllocationSwap.getCurrentAllocation(), patientAgent.getCurrentAllocation())) {
-
+            else if (patientAgent.getPatientPreference().isAllocationSwapAcceptable(agentAllocationSwap.getCurrentAllocation(),
+                    patientAgent.getCurrentAllocation())) {
+                patientAgent.setCurrentAllocation(agentAllocationSwap.getCurrentAllocation());
                 replyWithAcceptance(message);
                 informHospitalAgentOfSwap(agentAllocationSwap, dfSubscription.getAgentDescription().getName(), message.getSender());
 
-                patientAgent.setCurrentAllocation(agentAllocationSwap.getCurrentAllocation());
             } else {
                 refuseSwapProposal(message);
             }

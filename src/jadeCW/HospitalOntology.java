@@ -72,10 +72,10 @@ public class HospitalOntology extends Ontology {
             add(swapAllocationUpdateSchema, SwapAllocationUpdate.class);
 
             PredicateSchema allocationSwapSummary = new PredicateSchema(ALLOCATION_SWAP_SUMMARY);
-            allocationSwapSummary.add(ALLOCATION_SWAP_SUMMARY_LEFT_ALLOCATION, stringSchema, ObjectSchema.MANDATORY);
-            allocationSwapSummary.add(ALLOCATION_SWAP_SUMMARY_LEFT_HOLDER, integerSchema, ObjectSchema.MANDATORY);
-            allocationSwapSummary.add(ALLOCATION_SWAP_SUMMARY_RIGHT_ALLOCATION, stringSchema, ObjectSchema.MANDATORY);
-            allocationSwapSummary.add(ALLOCATION_SWAP_SUMMARY_RIGHT_HOLDER, integerSchema, ObjectSchema.MANDATORY);
+            allocationSwapSummary.add(ALLOCATION_SWAP_SUMMARY_LEFT_ALLOCATION, integerSchema, ObjectSchema.MANDATORY);
+            allocationSwapSummary.add(ALLOCATION_SWAP_SUMMARY_LEFT_HOLDER, stringSchema, ObjectSchema.MANDATORY);
+            allocationSwapSummary.add(ALLOCATION_SWAP_SUMMARY_RIGHT_ALLOCATION, integerSchema, ObjectSchema.MANDATORY);
+            allocationSwapSummary.add(ALLOCATION_SWAP_SUMMARY_RIGHT_HOLDER, stringSchema, ObjectSchema.MANDATORY);
             add(allocationSwapSummary,AllocationSwapSummary.class);
 
 

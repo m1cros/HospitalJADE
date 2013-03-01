@@ -36,7 +36,7 @@ public class RespondToProposal2 extends CyclicBehaviour {
 
         if (message != null) {
 
-            ContentElement p = null;
+            ContentElement p;
             AgentAllocationSwap agentAllocationSwap;
 
             try {
@@ -54,13 +54,10 @@ public class RespondToProposal2 extends CyclicBehaviour {
             }
 
             if (hospitalAgent.isAppointmentFree(agentAllocationSwap.getDesiredAllocation())) {
-                // can change.
                 replyWithAcceptance(message);
-
+                hospitalAgent.removeAppointment(agentAllocationSwap.getCurrentAllocation());
                 hospitalAgent.setAppointment(agentAllocationSwap.getDesiredAllocation(), message.getSender());
-
             } else {
-
                 refuseSwapProposal(message, agentAllocationSwap);
             }
         }
