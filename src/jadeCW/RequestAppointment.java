@@ -98,7 +98,7 @@ public class RequestAppointment extends Behaviour {
             if (p instanceof Appointment) {
                 Appointment appointment = (Appointment) p;
                 patientAgent.setCurrentAllocation(appointment.getAllocation());
-
+                System.out.println(patientAgent.getLocalName() + ": setting appiontment to " + appointment.getAllocation());
                 isAllocated = true;
             }
         }

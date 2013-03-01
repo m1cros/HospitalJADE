@@ -76,9 +76,9 @@ public class RespondToProposal1 extends CyclicBehaviour {
 
             } else if (patientAgent.getPatientPreference().isAllocationSwapAcceptable(agentAllocationSwap.getCurrentAllocation(),patientAgent.getCurrentAllocation())) {
 
-                patientAgent.setCurrentAllocation(agentAllocationSwap.getCurrentAllocation());
                 replyWithAcceptance(message,timestamp);
                 informHospitalAgentOfSwap(agentAllocationSwap,dfSubscription.getAgentDescription().getName(),message.getSender(),timestamp);
+                receiveConfirmationFromHospitalAgent(timestamp,agentAllocationSwap.getCurrentAllocation());
 
             } else {
 
@@ -87,6 +87,30 @@ public class RespondToProposal1 extends CyclicBehaviour {
 
             }
         }
+    }
+
+    private void receiveConfirmationFromHospitalAgent(String timestamp, int allocation) {
+
+        MessageTemplate messageTemplateConfirm = MessageTemplate.and(
+                MessageTemplate.MatchProtocol(FIPANames.InteractionProtocol.FIPA_PROPOSE),
+                MessageTemplate.and(
+                        MessageTemplate.MatchOntology(HospitalOntology.NAME),
+                        MessageTemplate.and(
+                                MessageTemplate.MatchLanguage(patientAgent.getCodec().getName()),
+                                MessageTemplate.and(MessageTemplate.MatchPerformative(ACLMessage.CONFIRM),
+                                        MessageTemplate.MatchConversationId(timestamp))
+
+
+                        )
+
+                )
+        );
+
+        System.out.println(patientAgent.getLocalName() + "awaiting confirmation...");
+        patientAgent.blockingReceive(messageTemplateConfirm);
+        System.out.println(patientAgent.getLocalName() + "got confirmation...");
+        patientAgent.setCurrentAllocation(allocation);
+
     }
 
     private void refuseSwapProposal(ACLMessage message, Predicate reason, String timestamp) {

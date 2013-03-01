@@ -56,24 +56,42 @@ public class UpdateAppointments extends CyclicBehaviour {
                 throw new RuntimeException();
             }
 
-            System.out.println("Received update message from " + message.getSender().getLocalName());
-            System.out.println("With summary: " + allocationSwapSummary);
+            System.out.println("Received swap update message from " + message.getSender().getLocalName());
 
             AID proposingAgentAID = new AID(allocationSwapSummary.getProposingAgent(), AID.ISGUID);
             AID receivingAgentAID = new AID(allocationSwapSummary.getReceivingAgent(), AID.ISGUID);
 
             if (swappedAppointments.contains(allocationSwapSummary)) {
 
-                hospitalAgent.setAppointment(allocationSwapSummary.getProposingAgentOldAppointment(), proposingAgentAID);
-                hospitalAgent.setAppointment(allocationSwapSummary.getReceivingAgentOldAppointment(), receivingAgentAID);
+                hospitalAgent.setAppointment(allocationSwapSummary.getReceivingAgentOldAppointment(), proposingAgentAID);
+                hospitalAgent.setAppointment(allocationSwapSummary.getProposingAgentOldAppointment(), receivingAgentAID);
                 swappedAppointments.remove(allocationSwapSummary);
+
+                confirmSwap(allocationSwapSummary.getReceivingAgent(),message.getConversationId());
+                confirmSwap(allocationSwapSummary.getProposingAgent(),message.getConversationId());
+
+                System.out.println("Confirm swap: " + allocationSwapSummary);
 
             } else {
 
+                System.out.println("Adding summary from " + message.getSender().getLocalName());
                 swappedAppointments.add(allocationSwapSummary);
 
             }
         }
+
+    }
+
+    private void confirmSwap(String agent, String timestamp) {
+
+        ACLMessage appointmentRequestMessage = new ACLMessage(ACLMessage.CONFIRM);
+        appointmentRequestMessage.setProtocol(FIPANames.InteractionProtocol.FIPA_PROPOSE);
+        appointmentRequestMessage.setLanguage(hospitalAgent.getCodec().getName());
+        appointmentRequestMessage.setOntology(HospitalOntology.NAME);
+        appointmentRequestMessage.setConversationId(timestamp);
+
+        appointmentRequestMessage.addReceiver(new AID(agent,AID.ISGUID));
+        hospitalAgent.send(appointmentRequestMessage);
 
     }
 

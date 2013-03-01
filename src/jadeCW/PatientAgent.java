@@ -121,8 +121,7 @@ public class PatientAgent extends Agent {
     public void updatePreferredAllocations() {
         DFAgentDescription appointmentAgentDescription = dfSubscription.getAgentDescription();
         if (appointmentAgentDescription != null) {
-            List<AllocationState> preferredAllocations
-                    = allocationFinder.getAllPreferredAllocations(appointmentAgentDescription,
+            List<AllocationState> preferredAllocations = allocationFinder.getAllPreferredAllocations(appointmentAgentDescription,
                                                                   getCurrentAllocation());
             setAllocationStates(preferredAllocations);
         }
