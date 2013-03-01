@@ -35,6 +35,7 @@ public class RespondToProposal2 extends CyclicBehaviour {
 
         if (message != null) {
 
+            String timestamp = message.getConversationId();
             ContentElement p;
             AgentAllocationSwap agentAllocationSwap;
 
@@ -53,22 +54,27 @@ public class RespondToProposal2 extends CyclicBehaviour {
             }
 
             if (hospitalAgent.isAppointmentFree(agentAllocationSwap.getDesiredAllocation())) {
-                replyWithAcceptance(message);
+
+                replyWithAcceptance(message,timestamp);
                 hospitalAgent.removeAppointment(agentAllocationSwap.getCurrentAllocation());
                 hospitalAgent.setAppointment(agentAllocationSwap.getDesiredAllocation(), message.getSender());
+
             } else {
-                refuseSwapProposal(message, agentAllocationSwap);
+
+                refuseSwapProposal(message,agentAllocationSwap,timestamp);
+
             }
         }
     }
 
-    private void refuseSwapProposal(ACLMessage message, AgentAllocationSwap agentAllocationSwap) {
+    private void refuseSwapProposal(ACLMessage message, AgentAllocationSwap agentAllocationSwap, String timestamp) {
 
         ACLMessage refuseSwapMessage = new ACLMessage(ACLMessage.REJECT_PROPOSAL);
         refuseSwapMessage.setProtocol(FIPANames.InteractionProtocol.FIPA_PROPOSE);
         refuseSwapMessage.setLanguage(hospitalAgent.getCodec().getName());
         refuseSwapMessage.setOntology(HospitalOntology.NAME);
         refuseSwapMessage.addReceiver(message.getSender());
+        refuseSwapMessage.setConversationId(timestamp);
 
         AppointmentQuery appointment = new AppointmentQuery();
         appointment.setAllocation(agentAllocationSwap.getDesiredAllocation());
@@ -87,12 +93,13 @@ public class RespondToProposal2 extends CyclicBehaviour {
 
     }
 
-    private void replyWithAcceptance(ACLMessage message) {
+    private void replyWithAcceptance(ACLMessage message, String timestamp) {
 
         ACLMessage acceptSwapMessage = new ACLMessage(ACLMessage.ACCEPT_PROPOSAL);
         acceptSwapMessage.setProtocol(FIPANames.InteractionProtocol.FIPA_PROPOSE);
         acceptSwapMessage.setLanguage(hospitalAgent.getCodec().getName());
         acceptSwapMessage.setOntology(HospitalOntology.NAME);
+        acceptSwapMessage.setConversationId(timestamp);
         acceptSwapMessage.addReceiver(message.getSender());
 
         hospitalAgent.send(acceptSwapMessage);

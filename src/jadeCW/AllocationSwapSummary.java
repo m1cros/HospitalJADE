@@ -6,8 +6,17 @@ public class AllocationSwapSummary implements Predicate {
 
     private String proposingAgent;
     private String receivingAgent;
+    private String timestamp;
     private int proposingAgentOldAppointment;
     private int receivingAgentOldAppointment;
+
+    public String getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(String timestamp) {
+        this.timestamp = timestamp;
+    }
 
     public String getProposingAgent() {
         return proposingAgent;

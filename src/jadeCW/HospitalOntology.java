@@ -30,6 +30,7 @@ public class HospitalOntology extends Ontology {
     public static final String ALLOCATION_SWAP_SUMMARY_PROPOSING_AGENT = "proposingAgent";
     public static final String ALLOCATION_SWAP_SUMMARY_RECEIVING_APPOINTMENT = "receivingAgentOldAppointment";
     public static final String ALLOCATION_SWAP_SUMMARY_RECEIVING_AGENT = "receivingAgent";
+    public static final String ALLOCATION_SWAP_SUMMARY_TIMESTAMP = "timestamp";
 
     public static final String APPOINTMENT_NOT_IN_POSSESSION = "APPOINTMENT_NOT_IN_POSSESSION";
     public static final String APPOINTMENT_NOT_IN_POSSESSION_CUR_APP = "currentAppointment";
@@ -72,6 +73,7 @@ public class HospitalOntology extends Ontology {
             allocationSwapSummary.add(ALLOCATION_SWAP_SUMMARY_PROPOSING_AGENT, stringSchema, ObjectSchema.MANDATORY);
             allocationSwapSummary.add(ALLOCATION_SWAP_SUMMARY_RECEIVING_APPOINTMENT, integerSchema, ObjectSchema.MANDATORY);
             allocationSwapSummary.add(ALLOCATION_SWAP_SUMMARY_RECEIVING_AGENT, stringSchema, ObjectSchema.MANDATORY);
+            allocationSwapSummary.add(ALLOCATION_SWAP_SUMMARY_TIMESTAMP, stringSchema, ObjectSchema.MANDATORY);
             add(allocationSwapSummary,AllocationSwapSummary.class);
 
             PredicateSchema appointmentNotInPossession = new PredicateSchema(APPOINTMENT_NOT_IN_POSSESSION);

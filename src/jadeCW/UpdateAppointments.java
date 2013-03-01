@@ -14,14 +14,11 @@ import java.util.*;
 
 public class UpdateAppointments extends CyclicBehaviour {
 
-
-    Map<AppointmentTuple, Set<AID>> swappedAppointments;
-
+    private final Set<AllocationSwapSummary> swappedAppointments = new TreeSet<AllocationSwapSummary>();
     private final HospitalAgent hospitalAgent;
 
     public UpdateAppointments(HospitalAgent hospitalAgent) {
         this.hospitalAgent = hospitalAgent;
-        swappedAppointments = new HashMap<AppointmentTuple, Set<AID>>();
     }
 
     @Override
@@ -56,37 +53,25 @@ public class UpdateAppointments extends CyclicBehaviour {
             if (p instanceof AllocationSwapSummary) {
                 allocationSwapSummary = (AllocationSwapSummary) p;
             } else {
-                return;
+                throw new RuntimeException();
             }
 
             System.out.println("Received update message : " + message);
             System.out.println("With summary: " + allocationSwapSummary);
 
-            int proposingAgentOldAppointment = allocationSwapSummary.getProposingAgentOldAppointment();
-            int receivingAgentOldAppointment = allocationSwapSummary.getReceivingAgentOldAppointment();
-            String proposingAgent = allocationSwapSummary.getProposingAgent();
-            String receivingAgent = allocationSwapSummary.getReceivingAgent();
+            AID proposingAgentAID = new AID(allocationSwapSummary.getProposingAgent(), AID.ISGUID);
+            AID receivingAgentAID = new AID(allocationSwapSummary.getReceivingAgent(), AID.ISGUID);
 
-            AID proposingAgentAID = new AID(proposingAgent, AID.ISGUID);
-            AID receivingAgentAID = new AID(receivingAgent, AID.ISGUID);
+            if (swappedAppointments.contains(allocationSwapSummary)) {
 
-            AppointmentTuple key = new AppointmentTuple(proposingAgentOldAppointment, receivingAgentOldAppointment);
-            if (swappedAppointments.containsKey(key)) {
-                Set<AID> swappers = swappedAppointments.get(key);
-                swappers.add(message.getSender());
-                if (swappers.contains(proposingAgentAID)
-                        && swappers.contains(receivingAgentAID)) {
-                    // we received both confirmations, update appointment table
-                    hospitalAgent.setAppointment(receivingAgentOldAppointment, proposingAgentAID);
-                    hospitalAgent.setAppointment(proposingAgentOldAppointment, receivingAgentAID);
-                    swappedAppointments.remove(key);
-                }
+                hospitalAgent.setAppointment(allocationSwapSummary.getProposingAgentOldAppointment(), proposingAgentAID);
+                hospitalAgent.setAppointment(allocationSwapSummary.getReceivingAgentOldAppointment(), receivingAgentAID);
+                swappedAppointments.remove(allocationSwapSummary);
+
             } else {
-                // we received the first confirmation
-                Set<AID> owners = new HashSet<AID>();
-                owners.add(message.getSender());
-                swappedAppointments.put(new AppointmentTuple(proposingAgentOldAppointment,
-                        receivingAgentOldAppointment), owners);
+
+                swappedAppointments.add(allocationSwapSummary);
+
             }
         }
 

@@ -14,7 +14,6 @@ import jade.lang.acl.MessageTemplate;
 public class RespondToProposal1 extends CyclicBehaviour {
 
     private final PatientAgent patientAgent;
-
     private final DFPatientSubscription dfSubscription;
 
     public RespondToProposal1(DFPatientSubscription dfSubscription, PatientAgent patientAgent) {
@@ -52,6 +51,7 @@ public class RespondToProposal1 extends CyclicBehaviour {
 
             ContentElement p;
             AgentAllocationSwap agentAllocationSwap;
+            String timestamp = message.getConversationId();
 
             try {
                 p = patientAgent.getContentManager().extractContent(message);
@@ -68,32 +68,35 @@ public class RespondToProposal1 extends CyclicBehaviour {
             }
 
 
-            if (patientAgent.getCurrentAllocation() != agentAllocationSwap.getDesiredAllocation()) {
+            if(patientAgent.getCurrentAllocation() != agentAllocationSwap.getDesiredAllocation()) {
+
                 AppointmentNotInPossession appointmentNotInPossession = new AppointmentNotInPossession();
                 appointmentNotInPossession.setCurrentAppointment(patientAgent.getCurrentAllocation());
-                refuseSwapProposal(message, appointmentNotInPossession);
-            }
+                refuseSwapProposal(message,appointmentNotInPossession,timestamp);
 
-            else if (patientAgent.getPatientPreference().isAllocationSwapAcceptable(agentAllocationSwap.getCurrentAllocation(),
-                    patientAgent.getCurrentAllocation())) {
+            } else if (patientAgent.getPatientPreference().isAllocationSwapAcceptable(agentAllocationSwap.getCurrentAllocation(),patientAgent.getCurrentAllocation())) {
+
                 patientAgent.setCurrentAllocation(agentAllocationSwap.getCurrentAllocation());
-                replyWithAcceptance(message);
-                informHospitalAgentOfSwap(agentAllocationSwap, dfSubscription.getAgentDescription().getName(), message.getSender());
+                replyWithAcceptance(message,timestamp);
+                informHospitalAgentOfSwap(agentAllocationSwap,dfSubscription.getAgentDescription().getName(),message.getSender(),timestamp);
 
             } else {
+
                 AppointmentNotPreferred appointmentNotPreferred = new AppointmentNotPreferred();
-                refuseSwapProposal(message, appointmentNotPreferred);
+                refuseSwapProposal(message, appointmentNotPreferred, timestamp);
+
             }
         }
     }
 
-    private void refuseSwapProposal(ACLMessage message, Predicate reason) {
+    private void refuseSwapProposal(ACLMessage message, Predicate reason, String timestamp) {
 
         ACLMessage refuseSwapMessage = new ACLMessage(ACLMessage.REJECT_PROPOSAL);
         refuseSwapMessage.setProtocol(FIPANames.InteractionProtocol.FIPA_PROPOSE);
         refuseSwapMessage.setLanguage(patientAgent.getCodec().getName());
         refuseSwapMessage.setOntology(HospitalOntology.NAME);
         refuseSwapMessage.addReceiver(message.getSender());
+        refuseSwapMessage.setConversationId(timestamp);
 
         try {
             patientAgent.getContentManager().fillContent(refuseSwapMessage, reason);
@@ -107,32 +110,35 @@ public class RespondToProposal1 extends CyclicBehaviour {
 
     }
 
-    private void replyWithAcceptance(ACLMessage message) {
+    private void replyWithAcceptance(ACLMessage message, String timestamp) {
 
         ACLMessage acceptSwapMessage = new ACLMessage(ACLMessage.ACCEPT_PROPOSAL);
         acceptSwapMessage.setProtocol(FIPANames.InteractionProtocol.FIPA_PROPOSE);
         acceptSwapMessage.setLanguage(patientAgent.getCodec().getName());
         acceptSwapMessage.setOntology(HospitalOntology.NAME);
         acceptSwapMessage.addReceiver(message.getSender());
+        acceptSwapMessage.setConversationId(timestamp);
 
         patientAgent.send(acceptSwapMessage);
 
     }
 
     private void informHospitalAgentOfSwap(AgentAllocationSwap agentAllocationSwap,
-                                           AID hospitalAgent, AID swapProposalAgent) {
+                                           AID hospitalAgent, AID swapProposalAgent, String timestamp) {
 
         ACLMessage acceptSwapMessage = new ACLMessage(ACLMessage.INFORM);
         acceptSwapMessage.setProtocol(FIPANames.InteractionProtocol.FIPA_PROPOSE);
         acceptSwapMessage.setLanguage(patientAgent.getCodec().getName());
         acceptSwapMessage.setOntology(HospitalOntology.NAME);
         acceptSwapMessage.addReceiver(hospitalAgent);
+        acceptSwapMessage.setConversationId(timestamp);
 
         AllocationSwapSummary allocationSwapSummary = new AllocationSwapSummary();
         allocationSwapSummary.setProposingAgentOldAppointment(agentAllocationSwap.getCurrentAllocation());
         allocationSwapSummary.setProposingAgent(swapProposalAgent.getName());
         allocationSwapSummary.setReceivingAgentOldAppointment(agentAllocationSwap.getDesiredAllocation());
         allocationSwapSummary.setReceivingAgent(patientAgent.getName());
+        allocationSwapSummary.setTimestamp(timestamp);
 
         System.out.println("Responding agent " + patientAgent.getLocalName() + " informing with " + allocationSwapSummary);
 
