@@ -27,6 +27,9 @@ public class AllocationFinder {
 
         /* 1. query patient preference for better appointment - patient could have no appointment */
         List<Integer> preferredAllocations = patientPreference.queryPreferredAllocations(curAppointment);
+
+        System.out.println("Preferred appointments to app " + curAppointment + ": " + preferredAllocations.toString());
+
         Iterator<Integer> preferredAllocationIterator = preferredAllocations.iterator();
         boolean foundPreferredAllocation = false;
 

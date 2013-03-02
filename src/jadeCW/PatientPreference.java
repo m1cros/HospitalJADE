@@ -21,7 +21,6 @@ public class PatientPreference {
 
             // split these by the spaces
             PreferenceLevel preferenceLevel = new PreferenceLevel(splitPref);
-
             preferenceLevels.add(preferenceLevel);
         }
     }
@@ -60,10 +59,6 @@ public class PatientPreference {
         }
 
         return false;
-    }
-
-    public void updatePreferenceHolder(int allocation, String owner) {
-
     }
 
 }

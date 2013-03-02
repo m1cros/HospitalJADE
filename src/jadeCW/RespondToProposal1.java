@@ -67,14 +67,17 @@ public class RespondToProposal1 extends CyclicBehaviour {
                 throw new RuntimeException();
             }
 
+            boolean requestedAppointmentNotInPossession = patientAgent.getCurrentAllocation() != agentAllocationSwap.getDesiredAllocation();
+            boolean beneficialAppointment = patientAgent.getPatientPreference().isAllocationSwapAcceptable(agentAllocationSwap.getCurrentAllocation(),patientAgent.getCurrentAllocation());
+            boolean hasMadeOtherSwapProposal = patientAgent.canAcceptProposition();
 
-            if(patientAgent.getCurrentAllocation() != agentAllocationSwap.getDesiredAllocation()) {
+            if(requestedAppointmentNotInPossession || hasMadeOtherSwapProposal) {
 
                 AppointmentNotInPossession appointmentNotInPossession = new AppointmentNotInPossession();
                 appointmentNotInPossession.setCurrentAppointment(patientAgent.getCurrentAllocation());
                 refuseSwapProposal(message,appointmentNotInPossession,timestamp);
 
-            } else if (patientAgent.getPatientPreference().isAllocationSwapAcceptable(agentAllocationSwap.getCurrentAllocation(),patientAgent.getCurrentAllocation())) {
+            } else if(beneficialAppointment) {
 
                 replyWithAcceptance(message,timestamp);
                 informHospitalAgentOfSwap(agentAllocationSwap,dfSubscription.getAgentDescription().getName(),message.getSender(),timestamp);

@@ -17,6 +17,7 @@ public class PatientAgent extends Agent {
 
     private PatientPreference patientPreference;
     private AllocationFinder allocationFinder;
+
     private DFPatientSubscription dfSubscription;
     private int currentAllocation = GlobalAgentConstants.APPOINTMENT_UNINITIALIZED;
 
@@ -24,6 +25,10 @@ public class PatientAgent extends Agent {
     private final Codec codec = new SLCodec();
 
     private List<AllocationState> allocationStates = new ArrayList<AllocationState>();
+    private RequestAppointment requestAppointmentBehaviour;
+    private FindAppointmentOwner findAppointmentOwner;
+    private ProposeSwap proposeSwapBehaviour;
+    private RespondToProposal1 respondToProposal1;
 
     public Codec getCodec() {
         return codec;
@@ -53,6 +58,10 @@ public class PatientAgent extends Agent {
         return patientPreference;
      }
 
+    public boolean canAcceptProposition() {
+        return proposeSwapBehaviour.hasMadeSwapProposal();
+    }
+
     protected void setup() {
         System.out.println("Initialization of patient agent: " + getLocalName());
 
@@ -71,10 +80,10 @@ public class PatientAgent extends Agent {
 
     private void addPatientBehaviours() {
 
-        RequestAppointment requestAppointmentBehaviour = new RequestAppointment(dfSubscription, this);
-        FindAppointmentOwner findAppointmentOwner = new FindAppointmentOwner(dfSubscription, this);
-        ProposeSwap proposeSwapBehaviour = new ProposeSwap(dfSubscription, this);
-        RespondToProposal1 respondToProposal1 = new RespondToProposal1(dfSubscription, this);
+        requestAppointmentBehaviour = new RequestAppointment(dfSubscription, this);
+        findAppointmentOwner = new FindAppointmentOwner(dfSubscription, this);
+        proposeSwapBehaviour = new ProposeSwap(dfSubscription, this);
+        respondToProposal1 = new RespondToProposal1(dfSubscription, this);
 
         addBehaviour(requestAppointmentBehaviour);
         addBehaviour(findAppointmentOwner);
@@ -86,7 +95,13 @@ public class PatientAgent extends Agent {
     private void initializeArguments() {
         Object[] args = getArguments();
         if (args != null && args.length > 1 && args[0] instanceof String) {
-            patientPreference = new PatientPreference((String) args[0]);
+
+            StringBuilder concatenatedArgs = new StringBuilder();
+            for(int i = 0;i < args.length;++i) {
+                concatenatedArgs.append((String) args[i]);
+            }
+
+            patientPreference = new PatientPreference(concatenatedArgs.toString());
         } else {
             patientPreference = new PatientPreference();
         }
@@ -123,6 +138,8 @@ public class PatientAgent extends Agent {
         if (appointmentAgentDescription != null) {
             List<AllocationState> preferredAllocations = allocationFinder.getAllPreferredAllocations(appointmentAgentDescription,
                                                                   getCurrentAllocation());
+
+            System.out.println(getLocalName() + ": updated states for allocation " + getCurrentAllocation() + ": " + preferredAllocations.toString());
             setAllocationStates(preferredAllocations);
         }
     }

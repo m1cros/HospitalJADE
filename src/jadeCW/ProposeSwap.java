@@ -40,14 +40,6 @@ public class ProposeSwap extends Behaviour {
             return;
         } else if(preferredAllocations.isEmpty()) {
             isHappyWithAppointment = true;
-        } else if(
-                currentlyProposedAllocationSwap != null &&
-                patientAgent.getCurrentAllocation() == currentlyProposedAllocationSwap.getDesiredAllocation()) {
-
-            updatePreferences();
-            expectedMessageTemplate = null;
-            currentlyProposedAllocationSwap = null;
-
         } else if (appointmentAgentDescription != null && !preferredAllocations.isEmpty()) {
 
             /* Loop executed when action is executed for the first time */
@@ -82,6 +74,10 @@ public class ProposeSwap extends Behaviour {
 
         }
 
+    }
+
+    public boolean hasMadeSwapProposal() {
+        return expectedMessageTemplate != null;
     }
 
     private void updatePreferences() {
@@ -165,6 +161,7 @@ public class ProposeSwap extends Behaviour {
                 receiveConfirmationFromHospitalAgent(expectedMessage.getConversationId());
             }
 
+            patientAgent.setCurrentAllocation(currentlyProposedAllocationSwap.getDesiredAllocation());
             successfulSwap = true;
 
         }
@@ -194,7 +191,7 @@ public class ProposeSwap extends Behaviour {
         System.out.println(patientAgent.getLocalName() + "awaiting confirmation...");
         patientAgent.blockingReceive(messageTemplateConfirm);
         System.out.println(patientAgent.getLocalName() + "got confirmation...");
-        patientAgent.setCurrentAllocation(currentlyProposedAllocationSwap.getDesiredAllocation());
+
 
     }
 
@@ -265,4 +262,6 @@ public class ProposeSwap extends Behaviour {
 
         return messageTemplate;
     }
+
+
 }

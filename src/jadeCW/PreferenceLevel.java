@@ -31,4 +31,8 @@ public class PreferenceLevel {
     public boolean containsAllocation(int newAllocation) {
         return appointmentsId.contains(newAllocation);
     }
+
+    public String toString() {
+        return appointmentsId.toString();
+    }
 }
