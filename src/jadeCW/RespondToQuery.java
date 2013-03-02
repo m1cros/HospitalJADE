@@ -26,9 +26,7 @@ public class RespondToQuery extends CyclicBehaviour {
                         MessageTemplate.and(
                                 MessageTemplate.MatchLanguage(hospitalAgent.getCodec().getName()),
                                 MessageTemplate.MatchPerformative(ACLMessage.QUERY_REF)
-
                         )
-
                 )
         );
 
@@ -37,7 +35,7 @@ public class RespondToQuery extends CyclicBehaviour {
         if (message != null) {
             int allocation;
 
-            ContentElement p = null;
+            ContentElement p;
             try {
                 p = hospitalAgent.getContentManager().extractContent(message);
             } catch (Codec.CodecException e) {
@@ -82,10 +80,7 @@ public class RespondToQuery extends CyclicBehaviour {
             }
 
             try {
-
                 hospitalAgent.getContentManager().fillContent(messageResponse, appointmentQuery);
-                // TODO
-                // Umyj swiat i ta funkcje
             } catch (Codec.CodecException e) {
                 throw new RuntimeException(e);
             } catch (OntologyException e) {

@@ -69,9 +69,9 @@ public class RespondToProposal1 extends CyclicBehaviour {
 
             boolean requestedAppointmentNotInPossession = patientAgent.getCurrentAllocation() != agentAllocationSwap.getDesiredAllocation();
             boolean beneficialAppointment = patientAgent.getPatientPreference().isAllocationSwapAcceptable(agentAllocationSwap.getCurrentAllocation(),patientAgent.getCurrentAllocation());
-            boolean hasMadeOtherSwapProposal = patientAgent.canAcceptProposition();
+            boolean hasMadeSwapProposal = patientAgent.hasMadeSwapProposal();
 
-            if(requestedAppointmentNotInPossession || hasMadeOtherSwapProposal) {
+            if(requestedAppointmentNotInPossession || hasMadeSwapProposal) {
 
                 AppointmentNotInPossession appointmentNotInPossession = new AppointmentNotInPossession();
                 appointmentNotInPossession.setCurrentAppointment(patientAgent.getCurrentAllocation());
@@ -109,9 +109,7 @@ public class RespondToProposal1 extends CyclicBehaviour {
                 )
         );
 
-        System.out.println(patientAgent.getLocalName() + "awaiting confirmation...");
         patientAgent.blockingReceive(messageTemplateConfirm);
-        System.out.println(patientAgent.getLocalName() + "got confirmation...");
         patientAgent.setCurrentAllocation(allocation);
 
     }

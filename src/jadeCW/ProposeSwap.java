@@ -13,10 +13,11 @@ import java.util.*;
 
 public class ProposeSwap extends Behaviour {
 
-    private boolean isHappyWithAppointment = false;
     private final PatientAgent patientAgent;
     private final DFPatientSubscription dfSubscription;
     private final int maxIterationsNum = 40;
+
+    private boolean isHappyWithAppointment = false;
     private int iterationsWithNoImprovementCount = 0;
 
     private Iterator<AllocationState> preferredAllocationsIterator;
@@ -29,6 +30,10 @@ public class ProposeSwap extends Behaviour {
         this.dfSubscription = dfSubscription;
     }
 
+    public boolean hasMadeSwapProposal() {
+        return expectedMessageTemplate != null;
+    }
+
     @Override
     public void action() {
 
@@ -37,10 +42,14 @@ public class ProposeSwap extends Behaviour {
         List<AllocationState> preferredAllocations = patientAgent.getAllocationStates();
 
         if(patientAgent.getCurrentAllocation() == GlobalAgentConstants.APPOINTMENT_UNINITIALIZED) {
+            /* Patient agent has not got any appointment from the hospital agent yet */
             return;
+
         } else if(preferredAllocations.isEmpty()) {
+            /* Patient Agent has its most preferred appointment */
             isHappyWithAppointment = true;
-        } else if (appointmentAgentDescription != null && !preferredAllocations.isEmpty()) {
+
+        } else if (appointmentAgentDescription != null) {
 
             /* Loop executed when action is executed for the first time */
             if(preferredAllocationsIterator == null) {
@@ -51,11 +60,12 @@ public class ProposeSwap extends Behaviour {
 
 
             if(!preferredAllocationsIterator.hasNext()) {
-                /* Condition executed when no more swaps available*/
+                /* Condition executed when no more swaps available */
                 updatePreferences();
 
             } else if(expectedMessageTemplate == null) {
 
+                /* We are not expecting any response, we can make another swap proposal */
                 proposeSwap(preferredAllocationsIterator.next(),appointmentAgentDescription);
 
             } else {
@@ -66,6 +76,8 @@ public class ProposeSwap extends Behaviour {
                     expectedMessageTemplate = null;
                     currentlyProposedAllocationSwap = null;
 
+                    /* If swap has been successful, we need to update our preference list
+                       as the patient agent has got new appointment */
                     if(wasSwapSuccessful) {
                         updatePreferences();
                     }
@@ -76,38 +88,39 @@ public class ProposeSwap extends Behaviour {
 
     }
 
-    public boolean hasMadeSwapProposal() {
-        return expectedMessageTemplate != null;
-    }
+
 
     private void updatePreferences() {
-        updatePatientAgentState(currentSize);
-        preferredAllocationsIterator = patientAgent.getAllocationStates().iterator();
-        currentSize = patientAgent.getAllocationStates().size();
-    }
 
-
-    private void updatePatientAgentState(int currentSize) {
-        // check if we should terminate
         patientAgent.updatePreferredAllocations();
 
         List<AllocationState> newPreferredAllocations = patientAgent.getAllocationStates();
         if (newPreferredAllocations.isEmpty() || iterationsWithNoImprovementCount == maxIterationsNum) {
-            // we have our favourite allocation
+
             System.out.println("Optimal appointment found for agent: " + patientAgent.getLocalName() + " appointment:  " + patientAgent.getCurrentAllocation());
             isHappyWithAppointment = true;
-        } else if (newPreferredAllocations.size() == currentSize) {
-            // no improvement
+
+        } else if (newPreferredAllocations.size() >= currentSize) {
+
             iterationsWithNoImprovementCount++;
+
         } else {
+
             iterationsWithNoImprovementCount = 0;
+
         }
+
+        preferredAllocationsIterator = patientAgent.getAllocationStates().iterator();
+        currentSize = patientAgent.getAllocationStates().size();
     }
 
     private void proposeSwap(AllocationState preferredAllocation, DFAgentDescription appointmentAgentDescription) {
 
+        /* Timestamp used to identify conversation, the same timestamp
+           will be used to throughout the whole conversation */
         String timestamp = System.currentTimeMillis() + "";
 
+        /* Object allocationSwap contains information about swap proposal for some other agent */
         AgentAllocationSwap allocationSwap = new AgentAllocationSwap();
         allocationSwap.setCurrentAllocation(patientAgent.getCurrentAllocation());
         allocationSwap.setDesiredAllocation(preferredAllocation.getAppointment());
@@ -143,7 +156,7 @@ public class ProposeSwap extends Behaviour {
         }
 
         patientAgent.send(swapMessage);
-        expectedMessageTemplate = createMatchingTemplate(timestamp);
+        expectedMessageTemplate = createMatchingTemplate(timestamp,agent);
         currentlyProposedAllocationSwap = agentAllocationSwap;
 
     }
@@ -158,7 +171,7 @@ public class ProposeSwap extends Behaviour {
 
             if (!expectedMessage.getSender().equals(hospitalAgent.getName())) {
                 informHospitalAgentOfSwap(expectedMessage.getSender(),hospitalAgent.getName(), expectedMessage.getConversationId());
-                receiveConfirmationFromHospitalAgent(expectedMessage.getConversationId());
+                receiveConfirmationFromHospitalAgent(expectedMessage.getConversationId(),hospitalAgent.getName());
             }
 
             patientAgent.setCurrentAllocation(currentlyProposedAllocationSwap.getDesiredAllocation());
@@ -171,29 +184,7 @@ public class ProposeSwap extends Behaviour {
         return successfulSwap;
     }
 
-    private void receiveConfirmationFromHospitalAgent(String timestamp) {
 
-        MessageTemplate messageTemplateConfirm = MessageTemplate.and(
-                MessageTemplate.MatchProtocol(FIPANames.InteractionProtocol.FIPA_PROPOSE),
-                MessageTemplate.and(
-                        MessageTemplate.MatchOntology(HospitalOntology.NAME),
-                        MessageTemplate.and(
-                                MessageTemplate.MatchLanguage(patientAgent.getCodec().getName()),
-                                MessageTemplate.and(MessageTemplate.MatchPerformative(ACLMessage.CONFIRM),
-                                        MessageTemplate.MatchConversationId(timestamp))
-
-
-                        )
-
-                )
-        );
-
-        System.out.println(patientAgent.getLocalName() + "awaiting confirmation...");
-        patientAgent.blockingReceive(messageTemplateConfirm);
-        System.out.println(patientAgent.getLocalName() + "got confirmation...");
-
-
-    }
 
     private void informHospitalAgentOfSwap(AID otherAgent, AID hospitalAgent, String timestamp) {
 
@@ -224,13 +215,34 @@ public class ProposeSwap extends Behaviour {
         patientAgent.send(acceptSwapMessage);
     }
 
+    private void receiveConfirmationFromHospitalAgent(String timestamp, AID hospital) {
+
+        MessageTemplate messageTemplateConfirm = MessageTemplate.and(
+                MessageTemplate.MatchProtocol(FIPANames.InteractionProtocol.FIPA_PROPOSE),
+                MessageTemplate.and(
+                        MessageTemplate.MatchOntology(HospitalOntology.NAME),
+                        MessageTemplate.and(
+                                MessageTemplate.MatchLanguage(patientAgent.getCodec().getName()),
+                                MessageTemplate.and(MessageTemplate.MatchPerformative(ACLMessage.CONFIRM),
+                                        MessageTemplate.and(MessageTemplate.MatchConversationId(timestamp),
+                                                MessageTemplate.MatchSender(hospital)))
+
+
+                        )
+
+                )
+        );
+
+        patientAgent.blockingReceive(messageTemplateConfirm);
+    }
+
 
     @Override
     public boolean done() {
         return isHappyWithAppointment;
     }
 
-    private MessageTemplate createMatchingTemplate(String timestamp) {
+    private MessageTemplate createMatchingTemplate(String timestamp, AID sender) {
         MessageTemplate messageTemplateAccept = MessageTemplate.and(
                 MessageTemplate.MatchProtocol(FIPANames.InteractionProtocol.FIPA_PROPOSE),
                 MessageTemplate.and(
@@ -238,7 +250,8 @@ public class ProposeSwap extends Behaviour {
                         MessageTemplate.and(
                                 MessageTemplate.MatchLanguage(patientAgent.getCodec().getName()),
                                 MessageTemplate.and(MessageTemplate.MatchPerformative(ACLMessage.ACCEPT_PROPOSAL),
-                                        MessageTemplate.MatchConversationId(timestamp))
+                                        MessageTemplate.and(MessageTemplate.MatchConversationId(timestamp),
+                                                MessageTemplate.MatchSender(sender)))
 
 
                         )
@@ -253,7 +266,8 @@ public class ProposeSwap extends Behaviour {
                         MessageTemplate.and(
                                 MessageTemplate.MatchLanguage(patientAgent.getCodec().getName()),
                                 MessageTemplate.and(MessageTemplate.MatchPerformative(ACLMessage.REJECT_PROPOSAL),
-                                        MessageTemplate.MatchConversationId(timestamp))
+                                        MessageTemplate.and(MessageTemplate.MatchConversationId(timestamp),
+                                                MessageTemplate.MatchSender(sender)))
                         )
                 )
         );

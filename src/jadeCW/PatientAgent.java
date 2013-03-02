@@ -58,7 +58,7 @@ public class PatientAgent extends Agent {
         return patientPreference;
      }
 
-    public boolean canAcceptProposition() {
+    public boolean hasMadeSwapProposal() {
         return proposeSwapBehaviour.hasMadeSwapProposal();
     }
 
