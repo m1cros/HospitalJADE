@@ -79,9 +79,11 @@ public class RespondToProposal1 extends CyclicBehaviour {
 
             } else if(beneficialAppointment) {
 
+                AID hospitalAgentAID = dfSubscription.getAgentDescription().getName();
+
                 replyWithAcceptance(message,timestamp);
-                informHospitalAgentOfSwap(agentAllocationSwap,dfSubscription.getAgentDescription().getName(),message.getSender(),timestamp);
-                receiveConfirmationFromHospitalAgent(timestamp,agentAllocationSwap.getCurrentAllocation());
+                informHospitalAgentOfSwap(agentAllocationSwap,hospitalAgentAID,message.getSender(),timestamp);
+                receiveConfirmationFromHospitalAgent(timestamp,agentAllocationSwap.getCurrentAllocation(),hospitalAgentAID);
 
             } else {
 
@@ -92,7 +94,7 @@ public class RespondToProposal1 extends CyclicBehaviour {
         }
     }
 
-    private void receiveConfirmationFromHospitalAgent(String timestamp, int allocation) {
+    private void receiveConfirmationFromHospitalAgent(String timestamp, int allocation, AID hospital) {
 
         MessageTemplate messageTemplateConfirm = MessageTemplate.and(
                 MessageTemplate.MatchProtocol(FIPANames.InteractionProtocol.FIPA_PROPOSE),
@@ -101,7 +103,8 @@ public class RespondToProposal1 extends CyclicBehaviour {
                         MessageTemplate.and(
                                 MessageTemplate.MatchLanguage(patientAgent.getCodec().getName()),
                                 MessageTemplate.and(MessageTemplate.MatchPerformative(ACLMessage.CONFIRM),
-                                        MessageTemplate.MatchConversationId(timestamp))
+                                        MessageTemplate.and(MessageTemplate.MatchConversationId(timestamp),
+                                                MessageTemplate.MatchSender(hospital)))
 
 
                         )
