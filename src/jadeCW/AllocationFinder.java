@@ -115,7 +115,7 @@ public class AllocationFinder {
     }
 
     private void printPreferredAllocations(Integer curAppointment, List<Integer> preferredAllocations) {
-        System.out.print("Preferred appointments to app " + curAppointment + ": ");
+        System.out.print(patient.getLocalName() + ": preferred appointments to app " + curAppointment + ": ");
         for (Integer appointment : preferredAllocations) {
             System.out.print(appointment + " ");
         }

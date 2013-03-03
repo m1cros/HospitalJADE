@@ -97,7 +97,8 @@ public class ProposeSwap extends Behaviour {
         List<AllocationState> newPreferredAllocations = patientAgent.getAllocationStates();
         if (newPreferredAllocations.isEmpty() || iterationsWithNoImprovementCount == maxIterationsNum) {
 
-            System.out.println("Optimal appointment found for agent: " + patientAgent.getLocalName() + " appointment:  " + patientAgent.getCurrentAllocation());
+            System.out.println(patientAgent.getLocalName() + " optimal appointment found: "
+                    + patientAgent.getCurrentAllocation());
             isHappyWithAppointment = true;
 
         } else if (newPreferredAllocations.size() >= currentSize) {
@@ -125,14 +126,15 @@ public class ProposeSwap extends Behaviour {
         allocationSwap.setCurrentAllocation(patientAgent.getCurrentAllocation());
         allocationSwap.setDesiredAllocation(preferredAllocation.getAppointment());
 
-        System.out.println("Current appointment of agent : " + patientAgent.getLocalName() + " is " + patientAgent.getCurrentAllocation());
+        System.out.println(patientAgent.getLocalName() + " current appointment is " + patientAgent.getCurrentAllocation());
 
         AID exchangePartnerAgent;
         if (preferredAllocation.getAppointmentStatus().equals(GlobalAgentConstants.APPOINTMENT_QUERY_RESPONSE_STATUS_FREE)) {
             exchangePartnerAgent = appointmentAgentDescription.getName();
         } else {
-            System.out.println(patientAgent.getLocalName() + " asking other agent " + "for appointment " + preferredAllocation.getAppointment());
             exchangePartnerAgent = new AID(preferredAllocation.getAppointmentHolder(), AID.ISGUID);
+            System.out.println(patientAgent.getLocalName() + " asking other agent "
+                    + exchangePartnerAgent.getLocalName() +  " for appointment " + preferredAllocation.getAppointment());
         }
 
         requestSwapWithAgent(exchangePartnerAgent, allocationSwap, timestamp);
@@ -164,7 +166,7 @@ public class ProposeSwap extends Behaviour {
     // returns true if swap was made
     private boolean receiveResponse(ACLMessage expectedMessage, DFAgentDescription hospitalAgent) {
 
-        System.out.println("Agent " + patientAgent.getLocalName() + " received response: " + expectedMessage);
+        System.out.println(patientAgent.getLocalName() + ": received response: " + expectedMessage);
 
         boolean successfulSwap = false;
         if (expectedMessage.getPerformative() == ACLMessage.ACCEPT_PROPOSAL) {
@@ -202,7 +204,7 @@ public class ProposeSwap extends Behaviour {
         allocationSwapSummary.setReceivingAgent(otherAgent.getName());
         allocationSwapSummary.setTimestamp(timestamp);
 
-        System.out.println("Proposing agent " + patientAgent.getLocalName() + " informing with " + allocationSwapSummary);
+        System.out.println(patientAgent.getLocalName() + " (proposer) informing with " + allocationSwapSummary);
 
         try {
             patientAgent.getContentManager().fillContent(acceptSwapMessage, allocationSwapSummary);

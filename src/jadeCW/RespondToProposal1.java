@@ -168,7 +168,7 @@ public class RespondToProposal1 extends CyclicBehaviour {
         allocationSwapSummary.setReceivingAgent(patientAgent.getName());
         allocationSwapSummary.setTimestamp(timestamp);
 
-        System.out.println("Responding agent " + patientAgent.getLocalName() + " informing with " + allocationSwapSummary);
+        System.out.println(patientAgent.getLocalName() + "(receiver) informing with " + allocationSwapSummary);
 
         try {
 
