@@ -164,7 +164,7 @@ public class ProposeSwap extends Behaviour {
     // returns true if swap was made
     private boolean receiveResponse(ACLMessage expectedMessage, DFAgentDescription hospitalAgent) {
 
-        System.out.println("Agent " + patientAgent.getLocalName() + " waiting to receive response");
+        System.out.println("Agent " + patientAgent.getLocalName() + " received response: " + expectedMessage);
 
         boolean successfulSwap = false;
         if (expectedMessage.getPerformative() == ACLMessage.ACCEPT_PROPOSAL) {

@@ -95,13 +95,7 @@ public class PatientAgent extends Agent {
     private void initializeArguments() {
         Object[] args = getArguments();
         if (args != null && args.length > 1 && args[0] instanceof String) {
-
-            StringBuilder concatenatedArgs = new StringBuilder();
-            for(int i = 0;i < args.length;++i) {
-                concatenatedArgs.append((String) args[i]);
-            }
-
-            patientPreference = new PatientPreference(concatenatedArgs.toString());
+            patientPreference = new PatientPreference((String) args[0]);
         } else {
             patientPreference = new PatientPreference();
         }
