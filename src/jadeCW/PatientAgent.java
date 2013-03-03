@@ -133,7 +133,8 @@ public class PatientAgent extends Agent {
             List<AllocationState> preferredAllocations = allocationFinder.getAllPreferredAllocations(appointmentAgentDescription,
                                                                   getCurrentAllocation());
 
-            System.out.println(getLocalName() + ": updated states for allocation " + getCurrentAllocation() + ": " + preferredAllocations.toString());
+            System.out.println(getLocalName() + ": updated states for allocation " + getCurrentAllocation() +
+                    ": " + preferredAllocations.toString());
             setAllocationStates(preferredAllocations);
         }
     }

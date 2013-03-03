@@ -71,24 +71,24 @@ public class RespondToProposal1 extends CyclicBehaviour {
             boolean beneficialAppointment = patientAgent.getPatientPreference().isAllocationSwapAcceptable(agentAllocationSwap.getCurrentAllocation(),patientAgent.getCurrentAllocation());
             boolean hasMadeSwapProposal = patientAgent.hasMadeSwapProposal();
 
-            if(requestedAppointmentNotInPossession || hasMadeSwapProposal) {
-
+            if(requestedAppointmentNotInPossession) {
+                System.out.println(patientAgent.getLocalName() + " does not have appointment in possession");
                 AppointmentNotInPossession appointmentNotInPossession = new AppointmentNotInPossession();
                 appointmentNotInPossession.setCurrentAppointment(patientAgent.getCurrentAllocation());
                 refuseSwapProposal(message,appointmentNotInPossession,timestamp);
 
-            } else if(beneficialAppointment) {
+            } else if (!beneficialAppointment || hasMadeSwapProposal) {
+                System.out.println(patientAgent.getLocalName() + " is refusing swap. He either doesnt like " +
+                        "the proposed appointment or he has already made a swap proposal");
+                AppointmentNotPreferred appointmentNotPreferred = new AppointmentNotPreferred();
+                refuseSwapProposal(message, appointmentNotPreferred, timestamp);
 
+            } else {
+                System.out.println(patientAgent.getLocalName() + " is happy with the swap");
                 AID hospitalAgentAID = dfSubscription.getAgentDescription().getName();
-
                 replyWithAcceptance(message,timestamp);
                 informHospitalAgentOfSwap(agentAllocationSwap,hospitalAgentAID,message.getSender(),timestamp);
                 receiveConfirmationFromHospitalAgent(timestamp,agentAllocationSwap.getCurrentAllocation(),hospitalAgentAID);
-
-            } else {
-
-                AppointmentNotPreferred appointmentNotPreferred = new AppointmentNotPreferred();
-                refuseSwapProposal(message, appointmentNotPreferred, timestamp);
 
             }
         }

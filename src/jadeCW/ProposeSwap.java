@@ -126,17 +126,15 @@ public class ProposeSwap extends Behaviour {
         allocationSwap.setCurrentAllocation(patientAgent.getCurrentAllocation());
         allocationSwap.setDesiredAllocation(preferredAllocation.getAppointment());
 
-        System.out.println(patientAgent.getLocalName() + " current appointment is " + patientAgent.getCurrentAllocation());
-
         AID exchangePartnerAgent;
         if (preferredAllocation.getAppointmentStatus().equals(GlobalAgentConstants.APPOINTMENT_QUERY_RESPONSE_STATUS_FREE)) {
             exchangePartnerAgent = appointmentAgentDescription.getName();
         } else {
             exchangePartnerAgent = new AID(preferredAllocation.getAppointmentHolder(), AID.ISGUID);
-            System.out.println(patientAgent.getLocalName() + " asking other agent "
-                    + exchangePartnerAgent.getLocalName() +  " for appointment " + preferredAllocation.getAppointment());
         }
 
+        System.out.println(patientAgent.getLocalName() + " asking other agent "
+                + exchangePartnerAgent.getLocalName() +  " for appointment " + preferredAllocation.getAppointment());
         requestSwapWithAgent(exchangePartnerAgent, allocationSwap, timestamp);
     }
 

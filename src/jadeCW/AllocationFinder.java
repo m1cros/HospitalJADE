@@ -27,8 +27,8 @@ public class AllocationFinder {
 
         /* 1. query patient preference for better appointment - patient could have no appointment */
         List<Integer> preferredAllocations = patientPreference.queryPreferredAllocations(curAppointment);
-
-        printPreferredAllocations(curAppointment, preferredAllocations);
+        System.out.println(patient.getLocalName() + ": preferred appointments to app "
+                + curAppointment + ": " + preferredAllocations);
 
         Iterator<Integer> preferredAllocationIterator = preferredAllocations.iterator();
         boolean foundPreferredAllocation = false;
@@ -112,13 +112,5 @@ public class AllocationFinder {
                throw new RuntimeException();
            }
 
-    }
-
-    private void printPreferredAllocations(Integer curAppointment, List<Integer> preferredAllocations) {
-        System.out.print(patient.getLocalName() + ": preferred appointments to app " + curAppointment + ": ");
-        for (Integer appointment : preferredAllocations) {
-            System.out.print(appointment + " ");
-        }
-        System.out.println();
     }
 }

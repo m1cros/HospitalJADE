@@ -27,6 +27,7 @@ public class RequestAppointment extends Behaviour {
 
         if (appointmentAgentDescription != null) {
             // appointment-service agent can allocate appointment
+            System.out.println(patientAgent.getLocalName() + " requesting initial appointment from hospital");
 
             //Check that this agent (i.e. the parent agent of this behaviour) has not already been allocated an appointment
             if (!isAllocated) {
@@ -98,7 +99,7 @@ public class RequestAppointment extends Behaviour {
             if (p instanceof Appointment) {
                 Appointment appointment = (Appointment) p;
                 patientAgent.setCurrentAllocation(appointment.getAllocation());
-                System.out.println(patientAgent.getLocalName() + ": setting appiontment to " + appointment.getAllocation());
+                System.out.println(patientAgent.getLocalName() + ": setting appointment to " + appointment.getAllocation());
                 isAllocated = true;
             }
         }
