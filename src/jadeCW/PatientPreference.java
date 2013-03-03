@@ -57,7 +57,7 @@ public class PatientPreference {
 
             PreferenceLevel preferenceLevel = preferenceLevelIterator.next();
 
-            if(preferenceLevel.containsAllocation(newAllocation) && !preferenceLevel.containsAllocation(currentAllocation)) {
+            if(preferenceLevel.containsAllocation(newAllocation)) {
                 return true;
             } else if(preferenceLevel.containsAllocation(currentAllocation)) {
                 return false;
