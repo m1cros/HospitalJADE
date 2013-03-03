@@ -34,6 +34,10 @@ public class ProposeSwap extends Behaviour {
         return expectedMessageTemplate != null;
     }
 
+    public AgentAllocationSwap getCurrentlyProposedAllocationSwap() {
+        return currentlyProposedAllocationSwap;
+    }
+
     @Override
     public void action() {
 
@@ -125,6 +129,7 @@ public class ProposeSwap extends Behaviour {
         AgentAllocationSwap allocationSwap = new AgentAllocationSwap();
         allocationSwap.setCurrentAllocation(patientAgent.getCurrentAllocation());
         allocationSwap.setDesiredAllocation(preferredAllocation.getAppointment());
+        allocationSwap.setTimestamp(timestamp);
 
         AID exchangePartnerAgent;
         if (preferredAllocation.getAppointmentStatus().equals(GlobalAgentConstants.APPOINTMENT_QUERY_RESPONSE_STATUS_FREE)) {

@@ -19,9 +19,11 @@ public class PatientPreference {
             // trim the whitespace
             splitPref = splitPref.trim();
 
-            // split these by the spaces
-            PreferenceLevel preferenceLevel = new PreferenceLevel(splitPref);
-            preferenceLevels.add(preferenceLevel);
+            if (!splitPref.equals("")) {
+                // split these by the spaces
+                PreferenceLevel preferenceLevel = new PreferenceLevel(splitPref);
+                preferenceLevels.add(preferenceLevel);
+            }
         }
     }
 

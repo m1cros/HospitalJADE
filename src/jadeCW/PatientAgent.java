@@ -62,6 +62,10 @@ public class PatientAgent extends Agent {
         return proposeSwapBehaviour.hasMadeSwapProposal();
     }
 
+    public AgentAllocationSwap getCurrentlyProposedAllocationSwap() {
+        return proposeSwapBehaviour.getCurrentlyProposedAllocationSwap();
+    }
+
     protected void setup() {
         System.out.println("Initialization of patient agent: " + getLocalName());
 
@@ -94,8 +98,12 @@ public class PatientAgent extends Agent {
 
     private void initializeArguments() {
         Object[] args = getArguments();
-        if (args != null && args.length > 1 && args[0] instanceof String) {
-            patientPreference = new PatientPreference((String) args[0]);
+        if (args != null && args.length > 1) {
+            StringBuilder concatenatedArgs = new StringBuilder();
+            for (int i = 0; i < args.length; ++i) {
+                concatenatedArgs.append((String) args[i] + " ");
+            }
+            patientPreference = new PatientPreference(concatenatedArgs.toString());
         } else {
             patientPreference = new PatientPreference();
         }

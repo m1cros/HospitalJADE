@@ -24,6 +24,7 @@ public class HospitalOntology extends Ontology {
     public static final String APPOINTMENT_SWAP_REQUEST = "APPOINTMENT_SWAP_REQUEST";
     public static final String APPOINTMENT_SWAP_REQUEST_CURRENT_ALLOCATION = "currentAllocation";
     public static final String APPOINTMENT_SWAP_REQUEST_DESIRED_ALLOCATION = "desiredAllocation";
+    public static final String APPOINTMENT_SWAP_REQUEST_TIMESTAMP = "timestamp";
 
     public static final String ALLOCATION_SWAP_SUMMARY = "ALLOCATION_SWAP_SUMMARY";
     public static final String ALLOCATION_SWAP_SUMMARY_PROPOSING_APPOINTMENT = "proposingAgentOldAppointment";
@@ -36,6 +37,8 @@ public class HospitalOntology extends Ontology {
     public static final String APPOINTMENT_NOT_IN_POSSESSION_CUR_APP = "currentAppointment";
 
     public static final String APPOINTMENT_NOT_PREFERRED = "APPOINTMENT_NOT_PREFERRED";
+
+    public static final String ALREADY_SWAPPING_APPOINTMENTS = "ALREADY_SWAPPING_APPOINTMENTS";
 
     private static Ontology theInstance = new HospitalOntology();
 
@@ -66,6 +69,7 @@ public class HospitalOntology extends Ontology {
             PredicateSchema appointmentSwapRequestSchema = new PredicateSchema(APPOINTMENT_SWAP_REQUEST);
             appointmentSwapRequestSchema.add(APPOINTMENT_SWAP_REQUEST_CURRENT_ALLOCATION, integerSchema, ObjectSchema.MANDATORY);
             appointmentSwapRequestSchema.add(APPOINTMENT_SWAP_REQUEST_DESIRED_ALLOCATION, integerSchema, ObjectSchema.MANDATORY);
+            appointmentSwapRequestSchema.add(APPOINTMENT_SWAP_REQUEST_TIMESTAMP, stringSchema, ObjectSchema.MANDATORY);
             add(appointmentSwapRequestSchema, AgentAllocationSwap.class);
 
             PredicateSchema allocationSwapSummary = new PredicateSchema(ALLOCATION_SWAP_SUMMARY);
@@ -82,6 +86,9 @@ public class HospitalOntology extends Ontology {
 
             PredicateSchema appointmentNotPreferred = new PredicateSchema(APPOINTMENT_NOT_PREFERRED);
             add(appointmentNotPreferred, AppointmentNotPreferred.class);
+
+            PredicateSchema alreadySwappingAppointments = new PredicateSchema(ALREADY_SWAPPING_APPOINTMENTS);
+            add(alreadySwappingAppointments, AlreadySwappingAppointments.class);
 
         } catch (OntologyException e) {
             throw new RuntimeException(e);
