@@ -46,6 +46,11 @@ public class PatientPreference {
 
     public boolean isAllocationSwapAcceptable(int newAllocation, int currentAllocation) {
 
+        if (preferenceLevels.isEmpty()) {
+            // we don't care, so we agree to whatever
+            return true;
+        }
+
         Iterator<PreferenceLevel> preferenceLevelIterator = preferenceLevels.iterator();
 
         while (preferenceLevelIterator.hasNext()) {
