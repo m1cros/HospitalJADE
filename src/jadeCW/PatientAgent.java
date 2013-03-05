@@ -130,7 +130,7 @@ public class PatientAgent extends Agent {
      */
     private void initializeArguments() {
         Object[] args = getArguments();
-        if (args != null && args.length > 1) {
+        if (args != null) {
             StringBuilder concatenatedArgs = new StringBuilder();
             for (int i = 0; i < args.length; ++i) {
                 concatenatedArgs.append(args[i] + " ");
