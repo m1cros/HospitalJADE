@@ -58,8 +58,6 @@ public class HospitalAgent extends Agent {
 
 
     protected void setup() {
-        System.out.println("Initialization of hospital agent: " + getLocalName());
-
         contentManager.registerLanguage(codec);
         contentManager.registerOntology(HospitalOntology.getInstance());
 
@@ -68,8 +66,6 @@ public class HospitalAgent extends Agent {
         registerService();
 
         addHospitalBehaviours();
-
-        System.out.println("Finished initialization of hospital agent: " + getLocalName());
     }
 
     private void addHospitalBehaviours() {

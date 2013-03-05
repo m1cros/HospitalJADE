@@ -21,13 +21,11 @@ public class FindAppointmentOwner extends Behaviour {
     public void action() {
         DFAgentDescription appointmentAgentDescription = dfSubscription.getAgentDescription();
         if (appointmentAgentDescription != null) {
-            System.out.println(patientAgent.getLocalName() + ": performs initial lookup for appointments");
             AllocationFinder allocFinder = patientAgent.getAllocationFinder();
             List<AllocationState> preferredAllocations
                     = allocFinder.getAllPreferredAllocations(appointmentAgentDescription,
                                                              patientAgent.getCurrentAllocation());
 
-            //System.out.println(patientAgent.getLocalName() + ": more preferred states: " + preferredAllocations.toString());
             patientAgent.setAllocationStates(preferredAllocations);
             allocationStatesSet = true;
         }

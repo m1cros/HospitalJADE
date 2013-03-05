@@ -1,6 +1,5 @@
 package jadeCW;
 
-import jade.core.AID;
 import jade.core.Agent;
 import jade.domain.DFService;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
@@ -39,7 +38,6 @@ public class DFPatientSubscription extends SubscriptionInitiator {
             if (results.length > 0) {
                 for (int i = 0; i < results.length; ++i) {
                     DFAgentDescription dfd = results[i];
-                    AID provider = dfd.getName();
                     // The same agent may provide several services; we are only interested
                     // in the allocate-appointments one
                     Iterator it = dfd.getAllServices();

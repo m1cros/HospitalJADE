@@ -99,20 +99,13 @@ public class ProposeSwap extends Behaviour {
         patientAgent.updatePreferredAllocations();
 
         List<AllocationState> newPreferredAllocations = patientAgent.getAllocationStates();
+
         if (newPreferredAllocations.isEmpty() || iterationsWithNoImprovementCount == maxIterationsNum) {
-
-            System.out.println(patientAgent.getLocalName() + " optimal appointment found: "
-                    + patientAgent.getCurrentAllocation());
             isHappyWithAppointment = true;
-
         } else if (newPreferredAllocations.size() >= currentSize) {
-
             iterationsWithNoImprovementCount++;
-
         } else {
-
             iterationsWithNoImprovementCount = 0;
-
         }
 
         preferredAllocationsIterator = patientAgent.getAllocationStates().iterator();
@@ -138,8 +131,6 @@ public class ProposeSwap extends Behaviour {
             exchangePartnerAgent = new AID(preferredAllocation.getAppointmentHolder(), AID.ISGUID);
         }
 
-        System.out.println(patientAgent.getLocalName() + " asking other agent "
-                + exchangePartnerAgent.getLocalName() +  " for appointment " + preferredAllocation.getAppointment());
         requestSwapWithAgent(exchangePartnerAgent, allocationSwap, timestamp);
     }
 
@@ -168,9 +159,6 @@ public class ProposeSwap extends Behaviour {
 
     // returns true if swap was made
     private boolean receiveResponse(ACLMessage expectedMessage, DFAgentDescription hospitalAgent) {
-
-        System.out.println(patientAgent.getLocalName() + ": received response: " + expectedMessage);
-
         boolean successfulSwap = false;
         if (expectedMessage.getPerformative() == ACLMessage.ACCEPT_PROPOSAL) {
 
@@ -181,7 +169,6 @@ public class ProposeSwap extends Behaviour {
 
             patientAgent.setCurrentAllocation(currentlyProposedAllocationSwap.getDesiredAllocation());
             successfulSwap = true;
-
         }
 
         currentlyProposedAllocationSwap = null;
@@ -206,8 +193,6 @@ public class ProposeSwap extends Behaviour {
         allocationSwapSummary.setReceivingAgentOldAppointment(currentlyProposedAllocationSwap.getDesiredAllocation());
         allocationSwapSummary.setReceivingAgent(otherAgent.getName());
         allocationSwapSummary.setTimestamp(timestamp);
-
-        System.out.println(patientAgent.getLocalName() + " (proposer) informing with " + allocationSwapSummary);
 
         try {
             patientAgent.getContentManager().fillContent(acceptSwapMessage, allocationSwapSummary);

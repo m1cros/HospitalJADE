@@ -15,12 +15,8 @@ public class PatientPreference {
         String[] splitPrefs = preferenceSpecification.split("-");
 
         for (String splitPref : splitPrefs) {
-
-            // trim the whitespace
             splitPref = splitPref.trim();
-
             if (!splitPref.equals("")) {
-                // split these by the spaces
                 PreferenceLevel preferenceLevel = new PreferenceLevel(splitPref);
                 preferenceLevels.add(preferenceLevel);
             }

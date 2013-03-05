@@ -18,21 +18,28 @@ public class AllocateAppointment extends CyclicBehaviour {
 
     @Override
     public void action() {
+        MessageTemplate mt = MessageTemplate.and(
+                 MessageTemplate.MatchProtocol(FIPANames.InteractionProtocol.FIPA_REQUEST),
+                 MessageTemplate.and(
+                     MessageTemplate.MatchOntology(HospitalOntology.NAME),
+                     MessageTemplate.and(
+                             MessageTemplate.MatchLanguage(hospitalAgent.getCodec().getName()),
+                             MessageTemplate.and(
+                                     MessageTemplate.MatchContent(GlobalAgentConstants.APPOINTMENT_SERVICE_TYPE),
+                                     MessageTemplate.MatchPerformative(ACLMessage.REQUEST)
+                             )
+                     )
 
-        MessageTemplate mt = GlobalAgentConstants.getFipaHospitalTemplate(
-                GlobalAgentConstants.APPOINTMENT_SERVICE_TYPE,
-                ACLMessage.REQUEST,
-                hospitalAgent.getCodec().getName());
+                 )
+         );
 
         ACLMessage message = hospitalAgent.receive(mt);
 
         if (message != null) {
             int freeAppointment = hospitalAgent.getFreeAppointment();
-
             AID sender = message.getSender();
             if (freeAppointment != GlobalAgentConstants.APPOINTMENT_NUMBERS_NOT_INITIALIZED) {
                 hospitalAgent.setAppointment(freeAppointment, sender);
-
                 proposeAppointment(sender, freeAppointment);
             } else {
                 refuseAppointment(sender);
@@ -63,11 +70,9 @@ public class AllocateAppointment extends CyclicBehaviour {
 
         Appointment appointment = new Appointment();
         appointment.setAllocation(allocatedAppointment);
-        try {
 
+        try {
             hospitalAgent.getContentManager().fillContent(proposeMessage,appointment);
-            // TODO
-            // Umyj swiat i ta funkcje
         } catch (Codec.CodecException e) {
             throw new RuntimeException(e);
         } catch (OntologyException e) {
