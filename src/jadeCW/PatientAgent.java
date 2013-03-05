@@ -171,9 +171,9 @@ public class PatientAgent extends Agent {
      * In our case, it only prints its final appointment
      */
     protected void takeDown() {
-        Integer allocation = null;
+        String allocation = null;
         if (currentAllocation != GlobalAgentConstants.APPOINTMENT_UNINITIALIZED) {
-            allocation = currentAllocation;
+            allocation = "Appointment " + currentAllocation;
         }
         System.out.println(getLocalName() + ": " + allocation);
     }
