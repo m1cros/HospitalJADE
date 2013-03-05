@@ -11,15 +11,30 @@ import jade.lang.acl.MessageTemplate;
 
 import java.util.*;
 
+/**
+ * Patient behaviour class which is responsible
+ * for proposing swaps to agents which have
+ * more preferred appointment than our current one
+ */
 public class ProposeSwap extends Behaviour {
 
+    /* Patient Agent for which this behaviour is instantiated */
     private final PatientAgent patientAgent;
-    private final DFPatientSubscription dfSubscription;
-    private final int maxIterationsNum = 40;
 
-    private boolean isHappyWithAppointment = false;
+    /* Subscription to hospital agent */
+    private final DFPatientSubscription dfSubscription;
+
+    /* Maximum number of iterations of the algorithm when no improvement
+       of the behaviour has been achieved. After extending this number,
+       the behaviour shuts down.
+     */
+    private final int maxIterationsNum = 40;
     private int iterationsWithNoImprovementCount = 0;
 
+    private boolean isHappyWithAppointment = false;
+
+    /* The following variables are used to denote state of behaviour */
+    /* The states are described in the method body */
     private Iterator<AllocationState> preferredAllocationsIterator;
     private MessageTemplate expectedMessageTemplate;
     private AgentAllocationSwap currentlyProposedAllocationSwap;
@@ -30,86 +45,108 @@ public class ProposeSwap extends Behaviour {
         this.dfSubscription = dfSubscription;
     }
 
+    /**
+     * @return true if the behaviour has made swap proposal and is
+     *         expecting a decision from other patient agent
+     */
     public boolean hasMadeSwapProposal() {
         return expectedMessageTemplate != null;
     }
 
+    /**
+     * @return details about the currently made offer
+     */
     public AgentAllocationSwap getCurrentlyProposedAllocationSwap() {
         return currentlyProposedAllocationSwap;
     }
 
     @Override
+    public boolean done() {
+        return isHappyWithAppointment;
+    }
+
+    @Override
     public void action() {
 
-        // finding agent for appointment-service
+        /* Retrieving hospital agent */
         DFAgentDescription appointmentAgentDescription = dfSubscription.getAgentDescription();
         List<AllocationState> preferredAllocations = patientAgent.getAllocationStates();
 
-        if(patientAgent.getCurrentAllocation() == GlobalAgentConstants.APPOINTMENT_UNINITIALIZED) {
+        if (patientAgent.getCurrentAllocation() == GlobalAgentConstants.APPOINTMENT_UNINITIALIZED) {
             /* Patient agent has not got any appointment from the hospital agent yet */
             return;
 
-        } else if(preferredAllocations.isEmpty()) {
+        } else if (preferredAllocations.isEmpty()) {
             /* Patient Agent has its most preferred appointment */
             isHappyWithAppointment = true;
 
         } else if (appointmentAgentDescription != null) {
 
             /* Loop executed when action is executed for the first time */
-            if(preferredAllocationsIterator == null) {
+            if (preferredAllocationsIterator == null) {
                 /* Querying patient preferences */
                 preferredAllocationsIterator = patientAgent.getAllocationStates().iterator();
                 currentSize = patientAgent.getAllocationStates().size();
             }
 
 
-            if(!preferredAllocationsIterator.hasNext()) {
+            if (!preferredAllocationsIterator.hasNext()) {
                 /* Condition executed when no more swaps available */
                 updatePreferences();
 
-            } else if(expectedMessageTemplate == null) {
+            } else if (expectedMessageTemplate == null) {
 
                 /* We are not expecting any response, we can make another swap proposal */
-                proposeSwap(preferredAllocationsIterator.next(),appointmentAgentDescription);
+                proposeSwap(preferredAllocationsIterator.next(), appointmentAgentDescription);
 
             } else {
                 /* Some message has been sent, awaiting a response */
                 ACLMessage expectedMessage = patientAgent.receive(expectedMessageTemplate);
-                if(expectedMessage != null) {
-                    boolean wasSwapSuccessful = receiveResponse(expectedMessage,appointmentAgentDescription);
+                if (expectedMessage != null) {
+                    boolean wasSwapSuccessful = receiveResponse(expectedMessage, appointmentAgentDescription);
                     expectedMessageTemplate = null;
                     currentlyProposedAllocationSwap = null;
 
                     /* If swap has been successful, we need to update our preference list
                        as the patient agent has got new appointment */
-                    if(wasSwapSuccessful) {
+                    if (wasSwapSuccessful) {
                         updatePreferences();
                     }
                 }
             }
-
         }
-
     }
 
 
-
+    /**
+     * The method updates the list of more preferred possible allocations
+     * in patient agent
+     */
     private void updatePreferences() {
 
+        /* Update preferences of the agent */
         patientAgent.updatePreferredAllocations();
-
         List<AllocationState> newPreferredAllocations = patientAgent.getAllocationStates();
+        preferredAllocationsIterator = patientAgent.getAllocationStates().iterator();
+        currentSize = patientAgent.getAllocationStates().size();
 
-        if (newPreferredAllocations.isEmpty() || iterationsWithNoImprovementCount == maxIterationsNum) {
+        if (newPreferredAllocations.isEmpty() || iterationsWithNoImprovementCount >= maxIterationsNum) {
+            /* We shut down the behaviour if there are no better appointments
+               or we exceeded the possible number of non-improving algorithm iterations
+             */
             isHappyWithAppointment = true;
+
         } else if (newPreferredAllocations.size() >= currentSize) {
+
+            /* No improvement has been made in our algorithm  */
             iterationsWithNoImprovementCount++;
         } else {
+
+            /* Improved the appointment, resetting the counter */
             iterationsWithNoImprovementCount = 0;
         }
 
-        preferredAllocationsIterator = patientAgent.getAllocationStates().iterator();
-        currentSize = patientAgent.getAllocationStates().size();
+
     }
 
     private void proposeSwap(AllocationState preferredAllocation, DFAgentDescription appointmentAgentDescription) {
@@ -124,13 +161,18 @@ public class ProposeSwap extends Behaviour {
         allocationSwap.setDesiredAllocation(preferredAllocation.getAppointment());
         allocationSwap.setTimestamp(timestamp);
 
+        /* Setting exchange agent */
         AID exchangePartnerAgent;
+
+        /* Required appointment is not held by anyone, so we must receive a response from hospital agent */
         if (preferredAllocation.getAppointmentStatus().equals(GlobalAgentConstants.APPOINTMENT_QUERY_RESPONSE_STATUS_FREE)) {
             exchangePartnerAgent = appointmentAgentDescription.getName();
         } else {
+            /* otherwise, appointment is held by other agent */
             exchangePartnerAgent = new AID(preferredAllocation.getAppointmentHolder(), AID.ISGUID);
         }
 
+        /* actual request sending */
         requestSwapWithAgent(exchangePartnerAgent, allocationSwap, timestamp);
     }
 
@@ -152,32 +194,54 @@ public class ProposeSwap extends Behaviour {
         }
 
         patientAgent.send(swapMessage);
-        expectedMessageTemplate = createMatchingTemplate(timestamp,agent);
+
+        /* Changing the state of the behaviour
+           We are now waiting for the response from other agent which match given template
+         */
+        expectedMessageTemplate = createMatchingTemplate(timestamp, agent);
         currentlyProposedAllocationSwap = agentAllocationSwap;
 
     }
 
-    // returns true if swap was made
+    /**
+     * @param expectedMessage - expected response from queried agnet
+     * @param hospitalAgent
+     * @return true if response is positive and we can make a swap
+     */
     private boolean receiveResponse(ACLMessage expectedMessage, DFAgentDescription hospitalAgent) {
         boolean successfulSwap = false;
         if (expectedMessage.getPerformative() == ACLMessage.ACCEPT_PROPOSAL) {
 
+            /* If the message was not from hospital agent,
+               we should inform hospital about the change
+             */
             if (!expectedMessage.getSender().equals(hospitalAgent.getName())) {
-                informHospitalAgentOfSwap(expectedMessage.getSender(),hospitalAgent.getName(), expectedMessage.getConversationId());
-                receiveConfirmationFromHospitalAgent(expectedMessage.getConversationId(),hospitalAgent.getName());
+                /* Inform hospital about the swap */
+                informHospitalAgentOfSwap(expectedMessage.getSender(), hospitalAgent.getName(), expectedMessage.getConversationId());
+
+                /* Wait for confirmation */
+                receiveConfirmationFromHospitalAgent(expectedMessage.getConversationId(), hospitalAgent.getName());
             }
 
+            /* Changing current allocation */
             patientAgent.setCurrentAllocation(currentlyProposedAllocationSwap.getDesiredAllocation());
             successfulSwap = true;
         }
 
+        /* Changing the state of the behaviour,
+           we can now send another propose swap */
         currentlyProposedAllocationSwap = null;
         expectedMessageTemplate = null;
         return successfulSwap;
     }
 
-
-
+    /**
+     * Informs hospital about the swap
+     *
+     * @param otherAgent    - agent with which we have made a swap
+     * @param hospitalAgent
+     * @param timestamp     - conversation id of the swap
+     */
     private void informHospitalAgentOfSwap(AID otherAgent, AID hospitalAgent, String timestamp) {
 
         ACLMessage acceptSwapMessage = new ACLMessage(ACLMessage.INFORM);
@@ -193,6 +257,7 @@ public class ProposeSwap extends Behaviour {
         allocationSwapSummary.setReceivingAgentOldAppointment(currentlyProposedAllocationSwap.getDesiredAllocation());
         allocationSwapSummary.setReceivingAgent(otherAgent.getName());
         allocationSwapSummary.setTimestamp(timestamp);
+
 
         try {
             patientAgent.getContentManager().fillContent(acceptSwapMessage, allocationSwapSummary);
@@ -226,11 +291,6 @@ public class ProposeSwap extends Behaviour {
         patientAgent.blockingReceive(messageTemplateConfirm);
     }
 
-
-    @Override
-    public boolean done() {
-        return isHappyWithAppointment;
-    }
 
     private MessageTemplate createMatchingTemplate(String timestamp, AID sender) {
         MessageTemplate messageTemplateAccept = MessageTemplate.and(

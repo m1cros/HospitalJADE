@@ -12,6 +12,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+/**
+ *   The class is responsible for querying hospital allocations.
+ */
 public class AllocationFinder {
 
     private final PatientAgent patient;
@@ -20,19 +23,23 @@ public class AllocationFinder {
         patient = agent;
     }
 
+    /**
+     *  Queries allocation provider for all preferred appointments to the current appointment
+     *  Returns a list of preferred appointments together with agents who currently hold them
+     */
     public List<AllocationState> getAllPreferredAllocations(DFAgentDescription allocationProvider, int curAppointment) {
 
         List<AllocationState> allocationStates = new ArrayList<AllocationState>();
         PatientPreference patientPreference = patient.getPatientPreference();
 
-        /* 1. query patient preference for better appointment - patient could have no appointment */
+        /* query patient preference for better appointment - patient could have no appointment */
         List<Integer> preferredAllocations = patientPreference.queryPreferredAllocations(curAppointment);
 
         Iterator<Integer> preferredAllocationIterator = preferredAllocations.iterator();
         boolean foundPreferredAllocation = false;
 
         while (preferredAllocationIterator.hasNext() && !foundPreferredAllocation) {
-            /* 2. ask hospital agent who has got that preference */
+            /* hospital agent who has got that preference */
             int preferredAppointment = preferredAllocationIterator.next();
             AllocationState allocationState = getAllocationState(allocationProvider, preferredAppointment);
 

@@ -9,6 +9,10 @@ import jade.domain.FIPANames;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 
+/**
+ * Class RequestAppointment requests an initial
+ * appointment from hospital agent
+ */
 public class RequestAppointment extends Behaviour {
 
     private boolean isAllocated = false;
@@ -22,19 +26,17 @@ public class RequestAppointment extends Behaviour {
 
     @Override
     public void action() {
-        // finding agent for appointment-service
+        /* Finding hospital agent */
         DFAgentDescription appointmentAgentDescription = dfSubscription.getAgentDescription();
 
         if (appointmentAgentDescription != null) {
-            // appointment-service agent can allocate appointment
-            System.out.println(patientAgent.getLocalName() + " requesting initial appointment from hospital");
 
-            //Check that this agent (i.e. the parent agent of this behaviour) has not already been allocated an appointment
             if (!isAllocated) {
-
+                /* Request appointment from hospital agent */
                 requestAppointment(appointmentAgentDescription);
-                receiveResponse();
 
+                /* Wait for response */
+                receiveResponse();
             }
         }
     }
@@ -87,7 +89,7 @@ public class RequestAppointment extends Behaviour {
 
         if (message.getPerformative() == ACLMessage.PROPOSE) {
 
-            ContentElement p = null;
+            ContentElement p;
             try {
                 p = patientAgent.getContentManager().extractContent(message);
             } catch (Codec.CodecException e) {
@@ -99,7 +101,6 @@ public class RequestAppointment extends Behaviour {
             if (p instanceof Appointment) {
                 Appointment appointment = (Appointment) p;
                 patientAgent.setCurrentAllocation(appointment.getAllocation());
-                System.out.println(patientAgent.getLocalName() + ": setting appointment to " + appointment.getAllocation());
                 isAllocated = true;
             }
         }

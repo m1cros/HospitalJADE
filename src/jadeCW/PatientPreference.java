@@ -43,7 +43,7 @@ public class PatientPreference {
     public boolean isAllocationSwapAcceptable(int newAllocation, int currentAllocation) {
 
         if (preferenceLevels.isEmpty()) {
-            // we don't care, so we agree to whatever
+            /* We have no preference, we can accept anything */
             return true;
         }
 
