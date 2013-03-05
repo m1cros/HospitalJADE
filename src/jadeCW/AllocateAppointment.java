@@ -42,6 +42,7 @@ public class AllocateAppointment extends CyclicBehaviour {
                 hospitalAgent.setAppointment(freeAppointment, sender);
                 proposeAppointment(sender, freeAppointment);
             } else {
+                // there are no free appointments
                 refuseAppointment(sender);
             }
         }
@@ -49,25 +50,15 @@ public class AllocateAppointment extends CyclicBehaviour {
     }
 
     private void refuseAppointment(AID receiver) {
-        ACLMessage proposeMessage = new ACLMessage(ACLMessage.REFUSE);
-        proposeMessage.setProtocol(FIPANames.InteractionProtocol.FIPA_REQUEST);
-        proposeMessage.setLanguage(hospitalAgent.getCodec().getName());
-        proposeMessage.setOntology(HospitalOntology.NAME);
-        proposeMessage.setContent(GlobalAgentConstants.APPOINTMENT_SERVICE_TYPE);
-        proposeMessage.addReceiver(receiver);
 
-        hospitalAgent.send(proposeMessage);
+        ACLMessage refuseMessage = createResponseMessage(receiver, ACLMessage.REFUSE);
+        hospitalAgent.send(refuseMessage);
+
     }
 
     private void proposeAppointment(AID receiver, Integer allocatedAppointment) {
 
-        ACLMessage proposeMessage = new ACLMessage(ACLMessage.PROPOSE);
-        proposeMessage.setProtocol(FIPANames.InteractionProtocol.FIPA_REQUEST);
-        proposeMessage.setLanguage(hospitalAgent.getCodec().getName());
-        proposeMessage.setOntology(HospitalOntology.NAME);
-        proposeMessage.setContent(GlobalAgentConstants.APPOINTMENT_SERVICE_TYPE);
-        proposeMessage.addReceiver(receiver);
-
+        ACLMessage proposeMessage = createResponseMessage(receiver, ACLMessage.PROPOSE);
         Appointment appointment = new Appointment();
         appointment.setAllocation(allocatedAppointment);
 
@@ -81,5 +72,15 @@ public class AllocateAppointment extends CyclicBehaviour {
 
         hospitalAgent.send(proposeMessage);
 
+    }
+
+    private ACLMessage createResponseMessage(AID receiver, int performative) {
+        ACLMessage message = new ACLMessage(performative);
+        message.setProtocol(FIPANames.InteractionProtocol.FIPA_REQUEST);
+        message.setLanguage(hospitalAgent.getCodec().getName());
+        message.setOntology(HospitalOntology.NAME);
+        message.setContent(GlobalAgentConstants.APPOINTMENT_SERVICE_TYPE);
+        message.addReceiver(receiver);
+        return message;
     }
 }

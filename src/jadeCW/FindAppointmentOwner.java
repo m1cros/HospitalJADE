@@ -4,6 +4,9 @@ import jade.core.behaviours.Behaviour;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import java.util.List;
 
+/**
+ * This behaviour is triggered only once, after the initialization of the agent
+ */
 public class FindAppointmentOwner extends Behaviour {
 
     private final DFPatientSubscription dfSubscription;

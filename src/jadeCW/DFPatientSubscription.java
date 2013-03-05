@@ -12,6 +12,10 @@ import jade.util.leap.Iterator;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * The class is responsible for handling patient subscription to
+ * the appointment allocation provider agent
+ */
 public class DFPatientSubscription extends SubscriptionInitiator {
 
     private List<DFAgentDescription> allocateApptsAgents = new ArrayList<DFAgentDescription>();
@@ -51,7 +55,7 @@ public class DFPatientSubscription extends SubscriptionInitiator {
             }
 
         } catch (FIPAException fe) {
-            throw new ServiceRegistrationException(fe);
+            throw new RuntimeException(fe);
         }
 
     }

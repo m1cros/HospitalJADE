@@ -94,7 +94,7 @@ public class HospitalAgent extends Agent {
             dfd.addServices(sd);
             DFService.register(this, dfd);
         } catch (FIPAException fe) {
-            throw new ServiceRegistrationException(fe);
+            throw new RuntimeException(fe);
         }
 
     }
@@ -106,7 +106,7 @@ public class HospitalAgent extends Agent {
         if (args != null && args.length == 1 && args[0] instanceof String) {
             appointments = Integer.parseInt((String) args[0]);
         } else {
-            throw new InvalidAgentInputException();
+            throw new RuntimeException();
         }
 
         return appointments;
