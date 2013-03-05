@@ -24,16 +24,20 @@ public class RespondToProposal1 extends CyclicBehaviour {
 
     @Override
     public void action() {
-
+    	// get the appointment agent description
         DFAgentDescription appointmentAgentDescription = dfSubscription.getAgentDescription();
 
+        // the apointment agent can be null, therefore if it is do nothing and wait
+        // till there is an appointment agent.
         if (appointmentAgentDescription != null) {
+        	// try to receive the swap request
             receiveSwapRequest();
         }
     }
 
     private void receiveSwapRequest() {
 
+    	
         MessageTemplate messageTemplate = MessageTemplate.and(
                 MessageTemplate.MatchProtocol(FIPANames.InteractionProtocol.FIPA_PROPOSE),
                 MessageTemplate.and(
@@ -76,13 +80,11 @@ public class RespondToProposal1 extends CyclicBehaviour {
             boolean hasMadeSwapProposal = patientAgent.hasMadeSwapProposal();
 
             if(requestedAppointmentNotInPossession) {
-                System.out.println(patientAgent.getLocalName() + " does not have appointment in possession");
                 AppointmentNotInPossession appointmentNotInPossession = new AppointmentNotInPossession();
                 appointmentNotInPossession.setCurrentAppointment(patientAgent.getCurrentAllocation());
                 refuseSwapProposal(message,appointmentNotInPossession, conversationId);
 
             } else if (!beneficialAppointment) {
-                System.out.println(patientAgent.getLocalName() + " doesn't like the proposed appointment");
                 AppointmentNotPreferred appointmentNotPreferred = new AppointmentNotPreferred();
                 refuseSwapProposal(message, appointmentNotPreferred, conversationId);
 
@@ -91,31 +93,30 @@ public class RespondToProposal1 extends CyclicBehaviour {
                 if (isSameSwap(mySwap, otherAgentAllocationSwap)) {
                     if (mySwap.getTimestamp().compareTo(otherAgentAllocationSwap.getTimestamp()) < 0) {
                         // my swap was earlier so I refuse with the hope that the other agent accepts
-                        System.out.println(patientAgent.getLocalName() + " has already made a swap proposal");
                         AlreadySwappingAppointments alreadySwappingAppointments = new AlreadySwappingAppointments();
                         refuseSwapProposal(message, alreadySwappingAppointments, conversationId);
                     }
                     else {
-                        System.out.println(patientAgent.getLocalName() + " is happy with the swap");
-                        AID hospitalAgentAID = dfSubscription.getAgentDescription().getName();
-                        replyWithAcceptance(message, conversationId);
-                        informHospitalAgentOfSwap(otherAgentAllocationSwap,hospitalAgentAID,message.getSender(), conversationId);
-                        receiveConfirmationFromHospitalAgent(conversationId,
-                                otherAgentAllocationSwap.getCurrentAllocation(),hospitalAgentAID);
+                        acceptProposal(message, otherAgentAllocationSwap,
+								conversationId);
                     }
                 }
-
             } else {
-                System.out.println(patientAgent.getLocalName() + " is happy with the swap");
-                AID hospitalAgentAID = dfSubscription.getAgentDescription().getName();
-                replyWithAcceptance(message, conversationId);
-                informHospitalAgentOfSwap(otherAgentAllocationSwap,hospitalAgentAID,message.getSender(), conversationId);
-                receiveConfirmationFromHospitalAgent(conversationId,
-                        otherAgentAllocationSwap.getCurrentAllocation(),hospitalAgentAID);
-
+                acceptProposal(message, otherAgentAllocationSwap,
+						conversationId);
             }
         }
     }
+
+
+	private void acceptProposal(ACLMessage message,
+			AgentAllocationSwap otherAgentAllocationSwap, String conversationId) {
+		AID hospitalAgentAID = dfSubscription.getAgentDescription().getName();
+		replyWithAcceptance(message, conversationId);
+		informHospitalAgentOfSwap(otherAgentAllocationSwap,hospitalAgentAID,message.getSender(), conversationId);
+		receiveConfirmationFromHospitalAgent(conversationId,
+		        otherAgentAllocationSwap.getCurrentAllocation(),hospitalAgentAID);
+	}
 
     private void receiveConfirmationFromHospitalAgent(String timestamp, int allocation, AID hospital) {
 
@@ -192,10 +193,7 @@ public class RespondToProposal1 extends CyclicBehaviour {
         allocationSwapSummary.setReceivingAgent(patientAgent.getName());
         allocationSwapSummary.setTimestamp(timestamp);
 
-        System.out.println(patientAgent.getLocalName() + "(receiver) informing with " + allocationSwapSummary);
-
         try {
-
             patientAgent.getContentManager().fillContent(acceptSwapMessage, allocationSwapSummary);
 
         } catch (Codec.CodecException e) {

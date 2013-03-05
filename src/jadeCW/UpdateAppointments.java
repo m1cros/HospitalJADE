@@ -36,7 +36,6 @@ public class UpdateAppointments extends CyclicBehaviour {
         );
 
         ACLMessage message = hospitalAgent.receive(messageTemplateAccept);
-
         if (message != null) {
 
             ContentElement p;
@@ -56,34 +55,33 @@ public class UpdateAppointments extends CyclicBehaviour {
                 throw new RuntimeException();
             }
 
-            System.out.println("Received swap update message from " + message.getSender().getLocalName());
-
             AID proposingAgentAID = new AID(allocationSwapSummary.getProposingAgent(), AID.ISGUID);
             AID receivingAgentAID = new AID(allocationSwapSummary.getReceivingAgent(), AID.ISGUID);
 
             if (swappedAppointments.contains(allocationSwapSummary)) {
-
+            	// there already has been an appointment by one agent,
+            	// now since a new message came it means that both agents
+            	// have sent the swap appointment message, thus confirming to the hospital agent
                 hospitalAgent.setAppointment(allocationSwapSummary.getReceivingAgentOldAppointment(), proposingAgentAID);
                 hospitalAgent.setAppointment(allocationSwapSummary.getProposingAgentOldAppointment(), receivingAgentAID);
+                // remove the already existing swap appointment
                 swappedAppointments.remove(allocationSwapSummary);
 
+                //send the confirmation messages
                 confirmSwap(allocationSwapSummary.getReceivingAgent(),message.getConversationId());
                 confirmSwap(allocationSwapSummary.getProposingAgent(),message.getConversationId());
 
-                System.out.println("Confirm swap: " + allocationSwapSummary);
-
             } else {
-
-                System.out.println("Adding summary from " + message.getSender().getLocalName());
+            	// have to add the appointment to be able to match it to 
+            	// a confirmation coming from the other agent
                 swappedAppointments.add(allocationSwapSummary);
-
             }
         }
 
     }
 
     private void confirmSwap(String agent, String timestamp) {
-
+    	// send a message to the agent confirming the swap
         ACLMessage appointmentRequestMessage = new ACLMessage(ACLMessage.CONFIRM);
         appointmentRequestMessage.setProtocol(FIPANames.InteractionProtocol.FIPA_PROPOSE);
         appointmentRequestMessage.setLanguage(hospitalAgent.getCodec().getName());

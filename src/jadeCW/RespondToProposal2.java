@@ -54,13 +54,15 @@ public class RespondToProposal2 extends CyclicBehaviour {
             }
 
             if (hospitalAgent.isAppointmentFree(agentAllocationSwap.getDesiredAllocation())) {
-
+            	// if the hospital still has the appointment to give (it is free)
+            	// then accept the swap
                 replyWithAcceptance(message,conversationId);
                 hospitalAgent.removeAppointment(agentAllocationSwap.getCurrentAllocation());
                 hospitalAgent.setAppointment(agentAllocationSwap.getDesiredAllocation(), message.getSender());
 
             } else {
-
+            	// otherwise something has changed and the hospital agent no longer
+            	// has the appointment to give.
                 refuseSwapProposal(message,agentAllocationSwap,conversationId);
 
             }
@@ -94,7 +96,7 @@ public class RespondToProposal2 extends CyclicBehaviour {
     }
 
     private void replyWithAcceptance(ACLMessage message, String conversationId) {
-
+   
         ACLMessage acceptSwapMessage = new ACLMessage(ACLMessage.ACCEPT_PROPOSAL);
         acceptSwapMessage.setProtocol(FIPANames.InteractionProtocol.FIPA_PROPOSE);
         acceptSwapMessage.setLanguage(hospitalAgent.getCodec().getName());

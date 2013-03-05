@@ -46,17 +46,15 @@ public class RespondToQuery extends CyclicBehaviour {
 
             if (p instanceof Appointment) {
                 Appointment appointment = (Appointment) p;
-
                 allocation = appointment.getAllocation();
-
             } else {
                 throw new RuntimeException();
             }
 
+            // create the response to the query 
             ACLMessage messageResponse = new ACLMessage(ACLMessage.QUERY_IF);
             messageResponse.setSender(hospitalAgent.getAID());
             messageResponse.addReceiver(message.getSender());
-
             messageResponse.setProtocol(FIPANames.InteractionProtocol.FIPA_QUERY);
             messageResponse.setLanguage(hospitalAgent.getCodec().getName());
             messageResponse.setOntology(HospitalOntology.NAME);
@@ -65,18 +63,18 @@ public class RespondToQuery extends CyclicBehaviour {
             appointmentQuery.setAllocation(allocation);
 
             if (allocation < 1 || allocation > hospitalAgent.getAppointmentsNum()) {
-
+            	// if the allocation is out of bounds
                 appointmentQuery.setState(GlobalAgentConstants.APPOINTMENT_QUERY_RESPONSE_STATUS_INVALID);
 
             } else if (hospitalAgent.isAppointmentFree(allocation)) {
-
+            	// if the appointment is free and can be taken from the hospital agent
                 appointmentQuery.setState(GlobalAgentConstants.APPOINTMENT_QUERY_RESPONSE_STATUS_FREE);
 
             } else {
-
+            	// otherwise the appointment has been allocated to another agent
+            	// notify who is holding this appointment (setHolder)
                 appointmentQuery.setState(GlobalAgentConstants.APPOINTMENT_QUERY_RESPONSE_STATUS_ALLOCATED);
                 appointmentQuery.setHolder(hospitalAgent.getAppointmentHolderID(allocation));
-
             }
 
             try {
